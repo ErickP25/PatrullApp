@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../widgets/navbar.dart';
 import '../utils/colors.dart';
+import '../services/zona_service.dart';
+import '../utils/ubicacion_utils.dart';
 
 class PantallaInicio extends StatefulWidget {
   const PantallaInicio({super.key});
@@ -11,23 +15,47 @@ class PantallaInicio extends StatefulWidget {
 
 class _PantallaInicioState extends State<PantallaInicio> {
   final int _indiceNav = 0;
+  final ZonaService _zonaService = ZonaService(baseUrl: "http://localhost:5000"); // Cambia por tu backend real
+  Map<String, dynamic>? _zonaData;
+  Map<String, dynamic>? _incidentesData;
+  LatLng? _posicionUsuario;
+  bool _cargando = true;
+  String? _error;
 
-  String distritoSeleccionado = 'Comas';
-  String zonaSeleccionada = 'Zona Cms-02';
+  @override
+  void initState() {
+    super.initState();
+    _cargarZonaYIncidentes();
+  }
 
-  // TODO: Reemplaza por un widget real de mapa (Google Maps)
-  Widget _mapaSimulado() {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      height: 220,
-      decoration: BoxDecoration(
-        color: AppColors.grisFondo,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Center(
-        child: Text('Mapa con zonas y pines (Aquí va Google Maps)', style: TextStyle(color: Colors.grey)),
-      ),
-    );
+  Future<void> _cargarZonaYIncidentes() async {
+    setState(() { _cargando = true; _error = null; });
+    try {
+      final posicion = await UbicacionUtils.obtenerUbicacionActual();
+      if (posicion == null) {
+        setState(() {
+          _error = "Permiso de ubicación denegado.";
+          _cargando = false;
+        });
+        return;
+      }
+      final lat = posicion.latitude;
+      final lon = posicion.longitude;
+      final zona = await _zonaService.obtenerZonaPorUbicacion(lat, lon);
+      final incidentes = await _zonaService.obtenerIncidentesPorUbicacion(lat, lon);
+
+      setState(() {
+        _posicionUsuario = LatLng(lat, lon);
+        _zonaData = zona;
+        _incidentesData = incidentes;
+        _cargando = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = "Error al cargar zona: $e";
+        _cargando = false;
+      });
+    }
   }
 
   @override
@@ -40,162 +68,167 @@ class _PantallaInicioState extends State<PantallaInicio> {
         elevation: 0,
         actions: [
           TextButton.icon(
-            onPressed: () {},
+            onPressed: _cargarZonaYIncidentes,
             icon: const Icon(Icons.map_outlined, color: AppColors.azulPrincipal),
             label: const Text("Explorar zonas", style: TextStyle(color: AppColors.azulPrincipal)),
           ),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Selección de distrito y zona
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                _SelectorSimple(
-                  label: "Distrito",
-                  valor: distritoSeleccionado,
-                  onTap: () {}, // lógica para seleccionar distrito
-                ),
-                const SizedBox(width: 16),
-                _SelectorSimple(
-                  label: "Zona",
-                  valor: zonaSeleccionada,
-                  onTap: () {}, // lógica para seleccionar zona
-                ),
-              ],
-            ),
-          ),
-          // Mapa
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _mapaSimulado(),
-          ),
-          // Indicador de incidentes
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-            child: Text(
-              "Zona Cms-02 presenta 12 incidentes reportados en la última semana.",
-              style: TextStyle(color: AppColors.textoOscuro),
-            ),
-          ),
-          // Botones grandes
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                _BotonGrande(
-                  icono: Icons.place,
-                  color: AppColors.azulPrincipal,
-                  texto: "Reportar\nIncidente",
-                  onTap: () {
-                    Navigator.pushNamed(context, '/reporte');
-                  },
-                ),
-                const SizedBox(width: 24),
-                _BotonGrande(
-                  icono: Icons.warning_amber_rounded,
-                  color: AppColors.rojoAlerta,
-                  texto: "Alerta de\nEmergencia",
-                  onTap: () {
-                    Navigator.pushNamed(context, '/alerta');
-                  },
-                ),
-              ],
-            ),
+      body: _cargando
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!))
+              : _buildContenido(),
+      bottomNavigationBar: BarraNav(
+        indiceActual: 0,
+        onTap: (nuevoIndice) {
+          if (nuevoIndice == 0) {/* ya aquí */}
+          if (nuevoIndice == 1) Navigator.pushNamedAndRemoveUntil(context, '/historial', (_) => false);
+          if (nuevoIndice == 2) Navigator.pushNamedAndRemoveUntil(context, '/perfil', (_) => false);
+        },
+      ),
+    );
+  }
+
+  Widget _buildContenido() {
+    if (_zonaData == null || _incidentesData == null) {
+      return const Center(child: Text('No se encontró zona para tu ubicación.'));
+    }
+    final zona = _zonaData!;
+    final nombreZona = zona['properties']['nombre_zona'];
+    final cantIncidentes = zona['properties']['cant_incidentes'] ?? 0;
+    final List puntos = _incidentesData!['features'] ?? [];
+
+    // Decodifica el polígono de la zona (GeoJSON)
+    final poligono = zona['geometry']['coordinates'][0]
+        .map<LatLng>((coord) => LatLng(coord[1], coord[0]))
+        .toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Mapa interactivo
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: SizedBox(
+            height: 240,
+            child: FlutterMap(
+  options: MapOptions(
+    initialCenter: _posicionUsuario ?? LatLng(-12.05, -77.05), // centro de Lima por defecto
+    initialZoom: 15,
+    interactionOptions: const InteractionOptions(
+      flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+    ),
+  ),
+  children: [
+    TileLayer(
+      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      userAgentPackageName: 'com.example.app',
+    ),
+    PolygonLayer(
+      polygons: [
+        Polygon(
+          points: List<LatLng>.from(poligono),
+          color: AppColors.azulPrincipal.withOpacity(0.2),
+          borderStrokeWidth: 2,
+          borderColor: AppColors.azulPrincipal,
+        ),
+      ],
+    ),
+    MarkerLayer(
+      markers: puntos
+          .map<Marker>((p) => Marker(
+                point: LatLng(p['geometry']['coordinates'][1], p['geometry']['coordinates'][0]),
+                width: 34,
+                height: 34,
+                child: const Icon(Icons.place, color: Colors.red, size: 34),
+              ))
+          .toList(),
+    ),
+    if (_posicionUsuario != null)
+      MarkerLayer(
+        markers: [
+          Marker(
+            point: _posicionUsuario!,
+            width: 36,
+            height: 36,
+            child: const Icon(Icons.my_location, color: Colors.blue, size: 36),
           ),
         ],
       ),
-      bottomNavigationBar: BarraNav(
-  indiceActual: 0, // 0: Principal
-  onTap: (nuevoIndice) {
-    if (nuevoIndice == 0) {/* ya estás aquí */}
-    if (nuevoIndice == 1) Navigator.pushNamedAndRemoveUntil(context, '/historial', (_) => false);
-    if (nuevoIndice == 2) Navigator.pushNamedAndRemoveUntil(context, '/perfil', (_) => false);
-  },
-),
-    );
-  }
-}
+  ],
+)
 
-// --- Widgets auxiliares para la UI principal ---
-
-class _BotonGrande extends StatelessWidget {
-  final IconData icono;
-  final Color color;
-  final String texto;
-  final VoidCallback onTap;
-  const _BotonGrande({
-    required this.icono,
-    required this.color,
-    required this.texto,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 24),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.10),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color, width: 2),
           ),
+        ),
+        // Información de la zona e incidentes
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 4),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icono, color: color, size: 48),
-              const SizedBox(height: 10),
               Text(
-                texto,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: color, fontWeight: FontWeight.bold),
+                "$nombreZona presenta $cantIncidentes incidentes reportados en la última semana.",
+                style: const TextStyle(color: AppColors.textoOscuro, fontSize: 16),
               ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.place),
+                      label: const Text("Reportar Incidente"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.azulPrincipal,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/reporte');
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.warning_amber_rounded),
+                      label: const Text("Alerta de Emergencia"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.rojoAlerta,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/alerta');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              const Divider(),
+              // Lista resumida de los incidentes recientes
+              if (puntos.isNotEmpty)
+                ...puntos.take(4).map<Widget>((p) => ListTile(
+                      leading: const Icon(Icons.report, color: Colors.redAccent),
+                      title: Text(p['properties']['descripcion'] ?? "Incidente"),
+                      subtitle: Text(
+                        "ID: ${p['properties']['id_reporte']}",
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    )),
+              if (puntos.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: Text("No hay incidentes recientes en tu zona."),
+                ),
             ],
           ),
         ),
-      ),
+      ],
     );
   }
 }
 
-class _SelectorSimple extends StatelessWidget {
-  final String label;
-  final String valor;
-  final VoidCallback onTap;
-  const _SelectorSimple({
-    required this.label,
-    required this.valor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: AppColors.azulPrincipal),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Column(
-            children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(valor, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
