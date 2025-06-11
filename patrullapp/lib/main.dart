@@ -3,8 +3,6 @@ import 'routes.dart';
 import 'models/reporte.dart'; // Asegúrate de importar tu modelo
 import 'pantallas/pantalla_detalle_reporte.dart';
 
-
-
 void main() {
   runApp(const PatrullApp());
 }

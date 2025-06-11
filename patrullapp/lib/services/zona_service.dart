@@ -7,9 +7,12 @@ class ZonaService {
   ZonaService({required this.baseUrl});
 
   // Consulta zona por ubicación
-  Future<Map<String, dynamic>?> obtenerZonaPorUbicacion(double lat, double lon) async {
+  Future<Map<String, dynamic>?> obtenerZonaPorUbicacion(
+    double lat,
+    double lon,
+  ) async {
     final resp = await http.post(
-      Uri.parse('http://127.0.0.1:5000/api/ver_cantidad_incidentes'),
+      Uri.parse('$baseUrl/api/ver_cantidad_incidentes'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'latitud': lat, 'longitud': lon}),
     );
@@ -20,9 +23,12 @@ class ZonaService {
   }
 
   // Consulta incidentes (pines) por ubicación
-  Future<Map<String, dynamic>?> obtenerIncidentesPorUbicacion(double lat, double lon) async {
+  Future<Map<String, dynamic>?> obtenerIncidentesPorUbicacion(
+    double lat,
+    double lon,
+  ) async {
     final resp = await http.post(
-      Uri.parse('http://127.0.0.1:5000/api/ver_incidentes_en_zona'),
+      Uri.parse('$baseUrl/api/ver_incidentes_en_zona'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'latitud': lat, 'longitud': lon}),
     );
