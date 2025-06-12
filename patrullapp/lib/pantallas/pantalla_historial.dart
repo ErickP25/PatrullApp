@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import '../widgets/navbar.dart';
 import '../widgets/chip_filtro.dart';
@@ -161,3 +162,4 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
     );
   }
 }
+*/

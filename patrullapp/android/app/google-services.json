@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "847247867591",
+    "project_id": "patrullapp-3292c",
+    "storage_bucket": "patrullapp-3292c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:847247867591:android:0628a036d9ad5137e088e2",
+        "android_client_info": {
+          "package_name": "com.example.patrullapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtmPxy9-9AAPJGL-yt8eedCHPKnvRSdFU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

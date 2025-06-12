@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import '../models/reporte.dart';
 import '../utils/colors.dart';
@@ -148,4 +149,4 @@ class ReporteCard extends StatelessWidget {
       return "${diff.inDays} días";
     }
   }
-}
+}*/

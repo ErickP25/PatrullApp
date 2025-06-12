@@ -1,17 +1,29 @@
 class Reporte {
-  final String id;
-  final String tipo;
+  final String descripcion;
   final String direccion;
-  final DateTime fecha;
-  final String estado; // "En espera", "Atendido", "Falsa alarma"
-  final bool favorito;
+  final double latitud;
+  final double longitud;
+  final String? urlEvidencia;
+  final String tipoIncidente;
+  final String usuarioId;
 
   Reporte({
-    required this.id,
-    required this.tipo,
+    required this.descripcion,
     required this.direccion,
-    required this.fecha,
-    required this.estado,
-    this.favorito = false,
+    required this.latitud,
+    required this.longitud,
+    this.urlEvidencia,
+    required this.tipoIncidente,
+    required this.usuarioId,
   });
+
+  Map<String, dynamic> toJson() => {
+        'descripcion': descripcion,
+        'direccion': direccion,
+        'latitud': latitud,
+        'longitud': longitud,
+        'url_evidencia': urlEvidencia,
+        'tipo_incidente': tipoIncidente,
+        'usuario_id': usuarioId,
+      };
 }

@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import '../widgets/navbar.dart';
 import '../widgets/info_row.dart';
@@ -126,4 +127,4 @@ class PantallaDetalleReporte extends StatelessWidget {
   String _horaFormateada(DateTime fecha) {
     return "${fecha.hour.toString().padLeft(2, '0')}:${fecha.minute.toString().padLeft(2, '0')}";
   }
-}
+}*/

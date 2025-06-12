@@ -16,7 +16,7 @@ class PantallaInicio extends StatefulWidget {
 class _PantallaInicioState extends State<PantallaInicio> {
   final int _indiceNav = 0;
   final ZonaService _zonaService = ZonaService(
-    baseUrl: "http://192.168.100.46:5000",
+    baseUrl: "http://192.168.1.219:5000",
   ); // Cambia por tu backend real
   Map<String, dynamic>? _zonaData;
   Map<String, dynamic>? _incidentesData;
@@ -110,7 +110,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
             );
           }
           if (nuevoIndice == 2) {
-            Navigator.pushNamedAndRemoveUntil(context, '/perfil', (_) => false);
+            Navigator.pushNamedAndRemoveUntil(context, '/reporte', (_) => false);
           }
         },
       ),
@@ -118,175 +118,179 @@ class _PantallaInicioState extends State<PantallaInicio> {
   }
 
   Widget _buildContenido() {
-    if (_zonaData == null || _incidentesData == null) {
-      return const Center(
-        child: Text('No se encontró zona para tu ubicación.'),
-      );
-    }
-    final zona = _zonaData!;
-    final nombreZona = zona['properties']['nombre_zona'];
-    final cantIncidentes = zona['properties']['cant_incidentes'] ?? 0;
-    final List puntos = _incidentesData!['features'] ?? [];
+  if (_zonaData == null || _incidentesData == null) {
+    return const Center(
+      child: Text('No se encontró zona para tu ubicación.'),
+    );
+  }
+  final zona = _zonaData!;
+  final nombreZona = zona['properties']['nombre_zona'];
+  final cantIncidentes = zona['properties']['cant_incidentes'] ?? 0;
 
-    // Decodifica el polígono de la zona (GeoJSON)
-    final poligono = zona['geometry']['coordinates'][0]
-        .map<LatLng>((coord) => LatLng(coord[1], coord[0]))
-        .toList();
+  // Decodifica el polígono de la zona (GeoJSON)
+  final poligono = zona['geometry']['coordinates'][0]
+      .map<LatLng>((coord) => LatLng(coord[1], coord[0]))
+      .toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Mapa interactivo
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          child: SizedBox(
-            height: 240,
-            child: FlutterMap(
-              options: MapOptions(
-                initialCenter:
-                    _posicionUsuario ??
-                    LatLng(-12.05, -77.05), // centro de Lima por defecto
-                initialZoom: 15,
-                interactionOptions: const InteractionOptions(
-                  flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
-                ),
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Mapa interactivo
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: SizedBox(
+          height: 240,
+          child: FlutterMap(
+            options: MapOptions(
+              initialCenter: _posicionUsuario ?? LatLng(-12.05, -77.05),
+              initialZoom: 15,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
               ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.example.app',
-                ),
-                PolygonLayer(
-                  polygons: [
-                    Polygon(
-                      points: List<LatLng>.from(poligono),
-                      color: AppColors.azulPrincipal.withOpacity(0.2),
-                      borderStrokeWidth: 2,
-                      borderColor: AppColors.azulPrincipal,
-                    ),
-                  ],
-                ),
-                MarkerLayer(
-                  markers: puntos
-                      .map<Marker>(
-                        (p) => Marker(
-                          point: LatLng(
-                            p['geometry']['coordinates'][1],
-                            p['geometry']['coordinates'][0],
-                          ),
-                          width: 34,
-                          height: 34,
-                          child: const Icon(
-                            Icons.place,
-                            color: Colors.red,
-                            size: 34,
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-                if (_posicionUsuario != null)
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: _posicionUsuario!,
-                        width: 36,
-                        height: 36,
-                        child: const Icon(
-                          Icons.my_location,
-                          color: Colors.blue,
-                          size: 36,
-                        ),
-                      ),
-                    ],
-                  ),
-              ],
             ),
-          ),
-        ),
-        // Información de la zona e incidentes
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 4),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "$nombreZona presenta $cantIncidentes incidentes reportados en la última semana.",
-                style: const TextStyle(
-                  color: AppColors.textoOscuro,
-                  fontSize: 16,
-                ),
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.example.app',
               ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.place),
-                      label: const Text("Reportar Incidente"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.azulPrincipal,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/reporte');
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.warning_amber_rounded),
-                      label: const Text("Alerta de Emergencia"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.rojoAlerta,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/alerta');
-                      },
-                    ),
+              PolygonLayer(
+                polygons: [
+                  Polygon(
+                    points: List<LatLng>.from(poligono),
+                    color: AppColors.azulPrincipal.withOpacity(0.2),
+                    borderStrokeWidth: 2,
+                    borderColor: AppColors.azulPrincipal,
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
-              const Divider(),
-              // Lista resumida de los incidentes recientes
-              if (puntos.isNotEmpty)
-                ...puntos
-                    .take(4)
-                    .map<Widget>(
-                      (p) => ListTile(
-                        leading: const Icon(
-                          Icons.report,
-                          color: Colors.redAccent,
-                        ),
-                        title: Text(
-                          p['properties']['descripcion'] ?? "Incidente",
-                        ),
-                        subtitle: Text(
-                          "ID: ${p['properties']['id_reporte']}",
-                          style: const TextStyle(fontSize: 13),
-                        ),
+              if (_posicionUsuario != null)
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: _posicionUsuario!,
+                      width: 36,
+                      height: 36,
+                      child: const Icon(
+                        Icons.my_location,
+                        color: Colors.blue,
+                        size: 36,
                       ),
                     ),
-              if (puntos.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: Text("No hay incidentes recientes en tu zona."),
+                  ],
                 ),
             ],
           ),
         ),
-      ],
-    );
-  }
+      ),
+      // Resumen visual bonito de la zona
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 8,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+          child: Row(
+            children: [
+              Icon(Icons.shield_outlined, color: AppColors.azulPrincipal, size: 36),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      nombreZona.toUpperCase(),
+                      style: TextStyle(
+                        color: AppColors.azulPrincipal,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "$cantIncidentes incidentes reportados en la última semana.",
+                      style: const TextStyle(
+                        color: AppColors.textoOscuro,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      // Espacio antes de los botones
+      const SizedBox(height: 24),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.place),
+                label: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 18),
+                  child: Text(
+                    "Reportar Incidente",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.azulPrincipal,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 5,
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/reporte');
+                },
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.warning_amber_rounded),
+                label: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 18),
+                  child: Text(
+                    "Alerta de Emergencia",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.rojoAlerta,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 5,
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/alerta');
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      // Nada más abajo, todo bien centrado y bonito!
+      const SizedBox(height: 16),
+    ],
+  );
+}
 }
