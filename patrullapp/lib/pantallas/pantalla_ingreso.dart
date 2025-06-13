@@ -61,13 +61,18 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
               // LOGO DE TU APP
               Image.asset(
                 "assets/logo_patrullapp.png", // Usa el nombre de tu archivo real
-                width: 145, height: 100,
+                width: 145,
+                height: 100,
                 fit: BoxFit.contain,
               ),
               const SizedBox(height: 19),
               const Text(
                 "Bienvenido a PatrullApp",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: AppColors.azulPrincipal),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 25,
+                  color: AppColors.azulPrincipal,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 25),
@@ -76,8 +81,12 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
                 controller: _dniController,
                 decoration: InputDecoration(
                   labelText: "DNI",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                  errorText: _errorMsg != null ? "" : null, // para mostrar el mensaje debajo
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  errorText: _errorMsg != null
+                      ? ""
+                      : null, // para mostrar el mensaje debajo
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -87,7 +96,9 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
                 controller: _claveController,
                 decoration: InputDecoration(
                   labelText: "Contraseña",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   errorText: _errorMsg != null ? "" : null,
                 ),
                 obscureText: true,
@@ -97,7 +108,11 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
                   padding: const EdgeInsets.only(top: 6, bottom: 4),
                   child: Text(
                     _errorMsg!,
-                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600, fontSize: 15),
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
               const SizedBox(height: 13),

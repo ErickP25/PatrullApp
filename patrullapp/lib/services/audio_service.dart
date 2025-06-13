@@ -1,30 +1,44 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
-
-
 class AudioService {
   final String baseUrl;
+
   AudioService({required this.baseUrl});
 
-  // Envía audio y obtiene la transcripción (y datos de GPT si aplica)
-  Future<Map<String, dynamic>?> enviarAudio(File audio, String usuarioId) async {
-    var uri = Uri.parse('$baseUrl/api/reportar_incidente');
-    var request = http.MultipartRequest('POST', uri)
+  Future<Map<String, dynamic>?> enviarAudio({
+    required File audioFile,
+    required String usuarioId,
+    required String direccion,
+    required double latitude,
+    required double longitude,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/crear_incidente');
+
+    final request = http.MultipartRequest('POST', uri)
       ..fields['usuario_id'] = usuarioId
+      ..fields['direccion'] = direccion
+      ..fields['latitud'] = latitude.toString()
+      ..fields['longitud'] = longitude.toString()
       ..files.add(
         await http.MultipartFile.fromPath(
-          'audio', audio.path,
-          contentType: MediaType('audio', 'wav'), // Cambia según extensión
+          'audio',
+          audioFile.path,
+          contentType: MediaType('audio', 'wav'),
         ),
       );
-    var res = await request.send();
-    if (res.statusCode == 200) {
-      final respStr = await res.stream.bytesToString();
-      return jsonDecode(respStr);
+
+    final response = await request.send();
+    final responseBody = await response.stream.bytesToString();
+
+    if (response.statusCode == 200) {
+      return jsonDecode(responseBody);
+    } else {
+      throw Exception(
+        'Error enviando audio: ${response.statusCode} - $responseBody',
+      );
     }
-    return null;
   }
 }

@@ -1,6 +1,5 @@
-/*
 import 'package:flutter/material.dart';
-import '../models/reporte.dart';
+import '../models/reporte_mock.dart';
 import '../utils/colors.dart';
 
 class ReporteCard extends StatelessWidget {
@@ -45,7 +44,9 @@ class ReporteCard extends StatelessWidget {
               // Favorito
               IconButton(
                 icon: Icon(
-                  reporte.favorito ? Icons.star_rounded : Icons.star_outline_rounded,
+                  reporte.favorito
+                      ? Icons.star_rounded
+                      : Icons.star_outline_rounded,
                   color: reporte.favorito ? Colors.amber : Colors.grey,
                 ),
                 onPressed: onFavorito,
@@ -56,9 +57,21 @@ class ReporteCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(reporte.tipo, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(
+                      reporte.tipo,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text(reporte.direccion, style: const TextStyle(fontSize: 14, color: Colors.black54)),
+                    Text(
+                      reporte.direccion,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
                     const SizedBox(height: 3),
                     Text(
                       "Hace ${_tiempoDesde(reporte.fecha)}",
@@ -69,7 +82,10 @@ class ReporteCard extends StatelessWidget {
               ),
               // Estado
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 7,
+                ),
                 decoration: BoxDecoration(
                   color: getColorEstado(reporte.estado).withOpacity(0.11),
                   borderRadius: BorderRadius.circular(14),
@@ -109,7 +125,11 @@ class ReporteCard extends StatelessWidget {
                     value: 'vermapa',
                     child: Row(
                       children: const [
-                        Icon(Icons.map_outlined, color: AppColors.azulPrincipal, size: 19),
+                        Icon(
+                          Icons.map_outlined,
+                          color: AppColors.azulPrincipal,
+                          size: 19,
+                        ),
                         SizedBox(width: 8),
                         Text("Ver en mapa"),
                       ],
@@ -149,4 +169,4 @@ class ReporteCard extends StatelessWidget {
       return "${diff.inDays} días";
     }
   }
-}*/
+}

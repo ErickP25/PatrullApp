@@ -44,29 +44,31 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
     );
   }
 
-void _cerrarSesion() async {
-  final bool? confirmado = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text("¿Estás seguro que deseas cerrar sesión?"),
-      content: const Text("Perderás el acceso a la aplicación hasta iniciar sesión nuevamente."),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text("Cancelar"),
+  void _cerrarSesion() async {
+    final bool? confirmado = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("¿Estás seguro que deseas cerrar sesión?"),
+        content: const Text(
+          "Perderás el acceso a la aplicación hasta iniciar sesión nuevamente.",
         ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text("Cerrar sesión"),
-        ),
-      ],
-    ),
-  );
-  if (confirmado ?? false) {
-    // Si quieres puedes limpiar datos de sesión aquí
-    Navigator.pushNamedAndRemoveUntil(context, '/ingreso', (_) => false);
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancelar"),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Cerrar sesión"),
+          ),
+        ],
+      ),
+    );
+    if (confirmado ?? false) {
+      // Si quieres puedes limpiar datos de sesión aquí
+      Navigator.pushNamedAndRemoveUntil(context, '/ingreso', (_) => false);
+    }
   }
-}
 
   void _cambiarContrasena() async {
     final bool? confirmado = await showDialog<bool>(
@@ -89,7 +91,9 @@ void _cerrarSesion() async {
     if (confirmado ?? false) {
       // Aquí lógica para ir a cambio de contraseña
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Redirigiendo a cambio de contraseña (demo)")),
+        const SnackBar(
+          content: Text("Redirigiendo a cambio de contraseña (demo)"),
+        ),
       );
     }
   }
@@ -101,7 +105,10 @@ void _cerrarSesion() async {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text("Mi perfil", style: TextStyle(color: AppColors.textoOscuro)),
+        title: const Text(
+          "Mi perfil",
+          style: TextStyle(color: AppColors.textoOscuro),
+        ),
         centerTitle: false,
       ),
       body: ListView(
@@ -119,11 +126,23 @@ void _cerrarSesion() async {
                   backgroundColor: AppColors.azulPrincipal.withOpacity(0.15),
                 ),
                 const SizedBox(height: 11),
-                Text(usuario.nombre, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                Text(
+                  usuario.nombre,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(usuario.correo, style: const TextStyle(fontSize: 15, color: Colors.black54)),
+                Text(
+                  usuario.correo,
+                  style: const TextStyle(fontSize: 15, color: Colors.black54),
+                ),
                 const SizedBox(height: 2),
-                Text("DNI : ${usuario.dni}", style: const TextStyle(fontSize: 15, color: Colors.black54)),
+                Text(
+                  "DNI : ${usuario.dni}",
+                  style: const TextStyle(fontSize: 15, color: Colors.black54),
+                ),
                 const SizedBox(height: 11),
                 BadgeReputacion(
                   reputacion: usuario.reputacion,
@@ -134,7 +153,14 @@ void _cerrarSesion() async {
           ),
           const SizedBox(height: 24),
           // Estadísticas
-          Text("Estadísticas", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.azulPrincipal)),
+          Text(
+            "Estadísticas",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: AppColors.azulPrincipal,
+            ),
+          ),
           const SizedBox(height: 11),
           _infoStat("Reportes realizados", usuario.reportes),
           _infoStat("Alertas de emergencia", usuario.alertas),
@@ -162,9 +188,19 @@ void _cerrarSesion() async {
       bottomNavigationBar: BarraNav(
         indiceActual: 2,
         onTap: (nuevoIndice) {
-          if (nuevoIndice == 0) Navigator.pushNamedAndRemoveUntil(context, '/inicio', (_) => false);
-          if (nuevoIndice == 1) Navigator.pushNamedAndRemoveUntil(context, '/historial', (_) => false);
-          if (nuevoIndice == 2) {/* ya estás aquí */}
+          if (nuevoIndice == 0) {
+            Navigator.pushNamedAndRemoveUntil(context, '/inicio', (_) => false);
+          }
+          if (nuevoIndice == 1) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/historial',
+              (_) => false,
+            );
+          }
+          if (nuevoIndice == 2) {
+            /* ya estás aquí */
+          }
         },
       ),
     );
@@ -177,7 +213,10 @@ void _cerrarSesion() async {
         children: [
           Text(label, style: const TextStyle(fontSize: 15)),
           const Spacer(),
-          Text(valor.toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          Text(
+            valor.toString(),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
         ],
       ),
     );

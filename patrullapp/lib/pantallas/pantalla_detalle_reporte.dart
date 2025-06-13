@@ -1,8 +1,7 @@
-/*
 import 'package:flutter/material.dart';
 import '../widgets/navbar.dart';
 import '../widgets/info_row.dart';
-import '../models/reporte.dart';
+import '../models/reporte_mock.dart';
 import '../utils/colors.dart';
 
 class PantallaDetalleReporte extends StatelessWidget {
@@ -17,7 +16,10 @@ class PantallaDetalleReporte extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text("Detalles", style: TextStyle(color: AppColors.textoOscuro)),
+        title: const Text(
+          "Detalles",
+          style: TextStyle(color: AppColors.textoOscuro),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textoOscuro),
           onPressed: () => Navigator.pop(context),
@@ -31,15 +33,22 @@ class PantallaDetalleReporte extends StatelessWidget {
             onPressed: () {
               // Aquí lógica de guardar como favorito
               ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Funcionalidad favorito en desarrollo")));
+                SnackBar(content: Text("Funcionalidad favorito en desarrollo")),
+              );
             },
           ),
           IconButton(
-            icon: const Icon(Icons.share_outlined, color: AppColors.azulPrincipal),
+            icon: const Icon(
+              Icons.share_outlined,
+              color: AppColors.azulPrincipal,
+            ),
             onPressed: () {
               // Aquí lógica para compartir o copiar link
               ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Funcionalidad compartir en desarrollo")));
+                SnackBar(
+                  content: Text("Funcionalidad compartir en desarrollo"),
+                ),
+              );
             },
           ),
         ],
@@ -77,7 +86,8 @@ class PantallaDetalleReporte extends StatelessWidget {
           InfoRow(
             icono: Icons.text_snippet_outlined,
             titulo: "Descripción:",
-            contenido: "Dos sujetos a bordo de una motocicleta interceptaron a un transeúnte y le arrebataron su teléfono celular. Luego huyeron con dirección hacia Av. México.",
+            contenido:
+                "Dos sujetos a bordo de una motocicleta interceptaron a un transeúnte y le arrebataron su teléfono celular. Luego huyeron con dirección hacia Av. México.",
           ),
 
           // Prioridad
@@ -91,7 +101,9 @@ class PantallaDetalleReporte extends StatelessWidget {
           InfoRow(
             icono: Icons.verified_outlined,
             titulo: "Estado del reporte:",
-            contenido: reporte.estado == "En espera" ? "En atención" : reporte.estado,
+            contenido: reporte.estado == "En espera"
+                ? "En atención"
+                : reporte.estado,
           ),
 
           // Atendido por
@@ -112,9 +124,16 @@ class PantallaDetalleReporte extends StatelessWidget {
       bottomNavigationBar: BarraNav(
         indiceActual: 1, // Porque viene desde Mis Reportes
         onTap: (nuevoIndice) {
-          if (nuevoIndice == 0) Navigator.pushNamedAndRemoveUntil(context, '/inicio', (_) => false);
-          if (nuevoIndice == 1) Navigator.pushNamedAndRemoveUntil(context, '/historial', (_) => false);
-          if (nuevoIndice == 2) Navigator.pushNamedAndRemoveUntil(context, '/perfil', (_) => false);
+          if (nuevoIndice == 0)
+            Navigator.pushNamedAndRemoveUntil(context, '/inicio', (_) => false);
+          if (nuevoIndice == 1)
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/historial',
+              (_) => false,
+            );
+          if (nuevoIndice == 2)
+            Navigator.pushNamedAndRemoveUntil(context, '/perfil', (_) => false);
         },
       ),
     );
@@ -127,4 +146,4 @@ class PantallaDetalleReporte extends StatelessWidget {
   String _horaFormateada(DateTime fecha) {
     return "${fecha.hour.toString().padLeft(2, '0')}:${fecha.minute.toString().padLeft(2, '0')}";
   }
-}*/
+}

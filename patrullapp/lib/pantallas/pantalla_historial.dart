@@ -1,9 +1,8 @@
-/*
 import 'package:flutter/material.dart';
 import '../widgets/navbar.dart';
 import '../widgets/chip_filtro.dart';
 import '../widgets/reporte_card.dart';
-import '../models/reporte.dart';
+import '../models/reporte_mock.dart';
 import '../utils/colors.dart';
 
 class PantallaHistorial extends StatefulWidget {
@@ -61,8 +60,10 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
 
   void _onNavTap(int i) {
     setState(() => _indiceNav = i);
-    if (i == 0) Navigator.pushNamedAndRemoveUntil(context, '/inicio', (_) => false);
-    if (i == 2) Navigator.pushNamedAndRemoveUntil(context, '/perfil', (_) => false);
+    if (i == 0)
+      Navigator.pushNamedAndRemoveUntil(context, '/inicio', (_) => false);
+    if (i == 2)
+      Navigator.pushNamedAndRemoveUntil(context, '/perfil', (_) => false);
   }
 
   void _onEliminar(Reporte r) {
@@ -89,9 +90,9 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
 
   void _onVerMapa(Reporte r) {
     // Lógica para ver ubicación en mapa
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Ver en mapa: ${r.direccion}")),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text("Ver en mapa: ${r.direccion}")));
   }
 
   @override
@@ -100,15 +101,24 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
       backgroundColor: AppColors.grisFondo,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Text("Mis Reportes", style: TextStyle(color: AppColors.textoOscuro)),
+        title: const Text(
+          "Mis Reportes",
+          style: TextStyle(color: AppColors.textoOscuro),
+        ),
         elevation: 0,
         actions: [
           TextButton.icon(
             onPressed: () {
               // Filtro avanzado
             },
-            icon: const Icon(Icons.filter_alt_outlined, color: AppColors.azulPrincipal),
-            label: const Text("Filtrar por", style: TextStyle(color: AppColors.azulPrincipal)),
+            icon: const Icon(
+              Icons.filter_alt_outlined,
+              color: AppColors.azulPrincipal,
+            ),
+            label: const Text(
+              "Filtrar por",
+              style: TextStyle(color: AppColors.azulPrincipal),
+            ),
           ),
         ],
       ),
@@ -155,11 +165,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
           ),
         ],
       ),
-      bottomNavigationBar: BarraNav(
-        indiceActual: _indiceNav,
-        onTap: _onNavTap,
-      ),
+      bottomNavigationBar: BarraNav(indiceActual: _indiceNav, onTap: _onNavTap),
     );
   }
 }
-*/

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'routes.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; // <-- Este archivo lo genera flutterfire configure
+import 'firebase_options.dart';
+import 'pantallas/pantalla_detalle_reporte.dart';
+import 'models/reporte_mock.dart'; // <-- Este archivo lo genera flutterfire configure
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +25,15 @@ class PatrullApp extends StatelessWidget {
       ),
       initialRoute: '/inicio',
       routes: appRoutes,
+      onGenerateRoute: (settings) {
+        if (settings.name == '/detalle') {
+          final reporte = settings.arguments as Reporte;
+          return MaterialPageRoute(
+            builder: (_) => PantallaDetalleReporte(reporte: reporte),
+          );
+        }
+        return null;
+      },
       // Si tienes otras rutas con argumentos en el futuro, aquí va onGenerateRoute
     );
   }
