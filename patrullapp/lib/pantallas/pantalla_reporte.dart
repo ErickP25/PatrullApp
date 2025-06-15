@@ -37,8 +37,8 @@ class _PantallaReporteState extends State<PantallaReporte> {
   String? _audioPath;
 
   final _audioService = AudioService(
-    baseUrl: "http://192.168.100.46:5000",
-  ); // Cambia por tu backend
+    baseUrl: "http://192.168.1.219:5000",
+  );
   final _storageService = FirebaseStorageService();
 
   @override
@@ -83,7 +83,6 @@ class _PantallaReporteState extends State<PantallaReporte> {
     }
   }
 
-  // Iniciar grabación de audio
   Future<void> _grabarAudio() async {
     var status = await Permission.microphone.request();
     if (status != PermissionStatus.granted) {
@@ -105,7 +104,6 @@ class _PantallaReporteState extends State<PantallaReporte> {
     );
   }
 
-  // Detener grabación y enviar/transcribir
   Future<void> _detenerGrabacion() async {
     setState(() => cargando = true);
 
@@ -147,7 +145,6 @@ class _PantallaReporteState extends State<PantallaReporte> {
     }
   }
 
-  // Subir evidencia (foto)
   Future<void> _subirEvidencia() async {
     final picker = ImagePicker();
     final file = await picker.pickImage(source: ImageSource.gallery);
@@ -169,17 +166,14 @@ class _PantallaReporteState extends State<PantallaReporte> {
     }
   }
 
-  // Enviar reporte
   Future<void> _enviarReporte() async {
     setState(() => cargando = true);
-    // Aquí deberías llamar a tu servicio de reportes (POST /api/reportar_incidente con todos los campos)
-    // Por ahora solo simula
     await Future.delayed(const Duration(seconds: 2));
     setState(() => cargando = false);
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("¡Reporte enviado!")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("¡Reporte enviado!")),
+      );
       Navigator.pop(context);
     }
   }
@@ -205,74 +199,68 @@ class _PantallaReporteState extends State<PantallaReporte> {
           body: cargando
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 22,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Ubicación
+                      // ---- UBICACIÓN ----
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        margin: const EdgeInsets.only(bottom: 16, top: 10),
+                        padding: const EdgeInsets.all(16),
+                        margin: const EdgeInsets.only(bottom: 18, top: 8),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
                           children: [
-                            const Icon(
-                              Icons.place,
-                              color: AppColors.azulPrincipal,
-                            ),
-                            const SizedBox(width: 7),
+                            const Icon(Icons.place, color: AppColors.azulPrincipal),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                direccion.isNotEmpty
-                                    ? direccion
-                                    : "Obteniendo ubicación...",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                direccion.isNotEmpty ? direccion : "Obteniendo ubicación...",
+                                style: const TextStyle(fontWeight: FontWeight.w500),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      // AUDIO Y TRANSCRIPCIÓN
+
+                      // ---- AUDIO & TRANSCRIPCIÓN ----
                       if (estado == EstadoGrabacion.inicio)
                         Center(
                           child: Column(
                             children: [
-                              ElevatedButton.icon(
-                                icon: const Icon(
-                                  Icons.mic,
-                                  size: 38,
-                                  color: Colors.white,
-                                ),
-                                label: const Text(
-                                  "Grabar audio",
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.rojoAlerta,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
-                                    vertical: 18,
+                              // Botón circular grande
+                              GestureDetector(
+                                onTap: _grabarAudio,
+                                child: Container(
+                                  width: 100,
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.rojoAlerta,
+                                    borderRadius: BorderRadius.circular(50),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.rojoAlerta.withOpacity(0.13),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 5),
+                                      ),
+                                    ],
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(24),
-                                  ),
+                                  child: const Icon(Icons.mic, color: Colors.white, size: 56),
                                 ),
-                                onPressed: _grabarAudio,
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 16),
                               const Text(
-                                "Describe lo sucedido claramente, indicando dirección",
-                                style: TextStyle(fontStyle: FontStyle.italic),
+                                "Describe el incidente por voz",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textoOscuro,
+                                  fontStyle: FontStyle.italic,
+                                ),
                               ),
+                              const SizedBox(height: 20),
                             ],
                           ),
                         ),
@@ -280,191 +268,206 @@ class _PantallaReporteState extends State<PantallaReporte> {
                         Center(
                           child: Column(
                             children: [
-                              ElevatedButton.icon(
-                                icon: const Icon(
-                                  Icons.stop,
-                                  size: 38,
-                                  color: Colors.white,
+                              Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  color: AppColors.rojoAlerta,
+                                  borderRadius: BorderRadius.circular(50),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.rojoAlerta.withOpacity(0.13),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
                                 ),
-                                label: const Text(
-                                  "Detener grabación",
-                                  style: TextStyle(fontSize: 16),
+                                child: IconButton(
+                                  icon: const Icon(Icons.stop, color: Colors.white, size: 54),
+                                  onPressed: _detenerGrabacion,
                                 ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.rojoAlerta,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
-                                    vertical: 18,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(24),
-                                  ),
-                                ),
-                                onPressed: _detenerGrabacion,
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 12),
                               const Text(
                                 "Grabando...",
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.rojoAlerta,
+                                  fontSize: 17,
                                 ),
                               ),
                             ],
                           ),
                         ),
                       if (estado == EstadoGrabacion.revisando)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ListTile(
-                              leading: const Icon(
-                                Icons.play_circle_fill,
-                                color: AppColors.azulPrincipal,
-                                size: 36,
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 24, top: 2),
+                          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 7,
+                                offset: const Offset(0, 2),
                               ),
-                              title: Text(
-                                transcripcion,
-                                style: const TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () {
-                                  _mostrarDialogoEdicion(
-                                    "Descripción",
-                                    transcripcion,
-                                    (nuevo) =>
-                                        setState(() => transcripcion = nuevo),
-                                  );
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Text(
-                                  "Tipo de incidente:",
-                                  style: TextStyle(fontWeight: FontWeight.w600),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    tipoIncidente,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w400,
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Transcripción bonita
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.only(right: 12, top: 5),
+                                    child: const Icon(Icons.graphic_eq, color: AppColors.azulPrincipal, size: 36),
+                                  ),
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        _mostrarDialogoEdicion(
+                                          "Descripción",
+                                          transcripcion,
+                                          (nuevo) => setState(() => transcripcion = nuevo),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                        child: Text(
+                                          transcripcion,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontStyle: FontStyle.italic,
+                                            color: AppColors.textoOscuro,
+                                            height: 1.38,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.edit, size: 18),
-                                  onPressed: () => _mostrarDialogoEdicion(
-                                    "Tipo de incidente",
-                                    tipoIncidente,
-                                    (nuevo) =>
-                                        setState(() => tipoIncidente = nuevo),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, size: 22, color: AppColors.azulPrincipal),
+                                    onPressed: () {
+                                      _mostrarDialogoEdicion(
+                                        "Descripción",
+                                        transcripcion,
+                                        (nuevo) => setState(() => transcripcion = nuevo),
+                                      );
+                                    },
                                   ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                const Text(
-                                  "Referencia:",
-                                  style: TextStyle(fontWeight: FontWeight.w600),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    referencia,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w400,
+                                ],
+                              ),
+                              const SizedBox(height: 18),
+                              // Tipo de incidente
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text("Tipo de incidente:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(tipoIncidente, style: const TextStyle(fontSize: 16)),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, size: 20),
+                                    onPressed: () => _mostrarDialogoEdicion(
+                                      "Tipo de incidente",
+                                      tipoIncidente,
+                                      (nuevo) => setState(() => tipoIncidente = nuevo),
                                     ),
                                   ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.edit, size: 18),
-                                  onPressed: () => _mostrarDialogoEdicion(
-                                    "Referencia",
-                                    referencia,
-                                    (nuevo) =>
-                                        setState(() => referencia = nuevo),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text("Referencia:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(referencia, style: const TextStyle(fontSize: 16)),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      const SizedBox(height: 18),
-                      // EVIDENCIA
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.upload_file_rounded),
-                        label: Text(
-                          evidenciaFile == null
-                              ? "Subir evidencia"
-                              : "Evidencia seleccionada",
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.textoOscuro,
-                          minimumSize: const Size(double.infinity, 48),
-                          side: const BorderSide(
-                            color: AppColors.azulPrincipal,
-                            width: 1.2,
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, size: 20),
+                                    onPressed: () => _mostrarDialogoEdicion(
+                                      "Referencia",
+                                      referencia,
+                                      (nuevo) => setState(() => referencia = nuevo),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                        onPressed: _subirEvidencia,
+
+                      // ==== SUBIR EVIDENCIA ====
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.upload_file_rounded),
+                          label: Text(evidenciaFile == null ? "Subir evidencia" : "Evidencia seleccionada"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: AppColors.textoOscuro,
+                            minimumSize: const Size(double.infinity, 48),
+                            side: const BorderSide(
+                              color: AppColors.azulPrincipal,
+                              width: 1.2,
+                            ),
+                          ),
+                          onPressed: _subirEvidencia,
+                        ),
                       ),
                       if (evidenciaFile != null)
                         Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: Image.file(evidenciaFile!, height: 90),
                         ),
-                      // ERRORES
+
+                      // ==== ERRORES ====
                       if (error != null)
                         Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            error!,
-                            style: const TextStyle(color: Colors.red),
-                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(error!, style: const TextStyle(color: Colors.red)),
                         ),
-                      // BOTONES FINALES
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.azulPrincipal,
-                                minimumSize: const Size(0, 48),
-                                textStyle: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+
+                      // ==== BOTONES FINALES ====
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20.0, bottom: 20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.azulPrincipal,
+                                  minimumSize: const Size(0, 54),
+                                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                                 ),
+                                onPressed: (estado == EstadoGrabacion.revisando && transcripcion.isNotEmpty)
+                                    ? _enviarReporte
+                                    : null,
+                                child: const Text("Enviar Reporte"),
                               ),
-                              onPressed:
-                                  (estado == EstadoGrabacion.revisando &&
-                                      transcripcion.isNotEmpty)
-                                  ? _enviarReporte
-                                  : null,
-                              child: const Text("Enviar Reporte"),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.grisBoton,
-                                foregroundColor: Colors.grey,
-                                minimumSize: const Size(0, 48),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.grisBoton,
+                                  foregroundColor: Colors.grey,
+                                  minimumSize: const Size(0, 54),
+                                ),
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("Cancelar"),
                               ),
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text("Cancelar"),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),

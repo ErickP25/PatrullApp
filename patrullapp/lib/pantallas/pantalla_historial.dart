@@ -60,10 +60,12 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
 
   void _onNavTap(int i) {
     setState(() => _indiceNav = i);
-    if (i == 0)
+    if (i == 0) {
       Navigator.pushNamedAndRemoveUntil(context, '/inicio', (_) => false);
-    if (i == 2)
+    }
+    if (i == 2) {
       Navigator.pushNamedAndRemoveUntil(context, '/perfil', (_) => false);
+    }
   }
 
   void _onEliminar(Reporte r) {

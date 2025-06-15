@@ -124,16 +124,19 @@ class PantallaDetalleReporte extends StatelessWidget {
       bottomNavigationBar: BarraNav(
         indiceActual: 1, // Porque viene desde Mis Reportes
         onTap: (nuevoIndice) {
-          if (nuevoIndice == 0)
+          if (nuevoIndice == 0) {
             Navigator.pushNamedAndRemoveUntil(context, '/inicio', (_) => false);
-          if (nuevoIndice == 1)
+          }
+          if (nuevoIndice == 1) {
             Navigator.pushNamedAndRemoveUntil(
               context,
               '/historial',
               (_) => false,
             );
-          if (nuevoIndice == 2)
+          }
+          if (nuevoIndice == 2) {
             Navigator.pushNamedAndRemoveUntil(context, '/perfil', (_) => false);
+          }
         },
       ),
     );
