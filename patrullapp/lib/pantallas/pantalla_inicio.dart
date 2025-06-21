@@ -15,7 +15,7 @@ class PantallaInicio extends StatefulWidget {
 
 class _PantallaInicioState extends State<PantallaInicio> {
   final ZonaService _zonaService = ZonaService(
-    baseUrl: "http://192.168.1.219:5000",
+    baseUrl: "http://172.17.150.208:5000",
   );
   Map<String, dynamic>? _zonaData;
   Map<String, dynamic>? _incidentesData;
@@ -46,7 +46,10 @@ class _PantallaInicioState extends State<PantallaInicio> {
       final lat = posicion.latitude;
       final lon = posicion.longitude;
       final zona = await _zonaService.obtenerZonaPorUbicacion(lat, lon);
-      final incidentes = await _zonaService.obtenerIncidentesPorUbicacion(lat, lon);
+      final incidentes = await _zonaService.obtenerIncidentesPorUbicacion(
+        lat,
+        lon,
+      );
 
       setState(() {
         _posicionUsuario = LatLng(lat, lon);
@@ -90,22 +93,30 @@ class _PantallaInicioState extends State<PantallaInicio> {
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(child: Text(_error!))
-              : RefreshIndicator(
-                  onRefresh: _cargarZonaYIncidentes,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: _buildContenido(),
-                  ),
-                ),
+          ? Center(child: Text(_error!))
+          : RefreshIndicator(
+              onRefresh: _cargarZonaYIncidentes,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: _buildContenido(),
+              ),
+            ),
       bottomNavigationBar: BarraNav(
         indiceActual: 0,
         onTap: (nuevoIndice) {
           if (nuevoIndice == 1) {
-            Navigator.pushNamedAndRemoveUntil(context, '/historial', (_) => false);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/historial',
+              (_) => false,
+            );
           }
           if (nuevoIndice == 2) {
-            Navigator.pushNamedAndRemoveUntil(context, '/reporte', (_) => false);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/reporte',
+              (_) => false,
+            );
           }
         },
       ),
@@ -130,15 +141,17 @@ class _PantallaInicioState extends State<PantallaInicio> {
 
     // ==== Marcadores de incidentes ====
     final List<Marker> incidentMarkers = (_incidentesData!['features'] as List)
-        .map<Marker>((feature) => Marker(
-              point: LatLng(
-                feature['geometry']['coordinates'][1],
-                feature['geometry']['coordinates'][0],
-              ),
-              width: 36,
-              height: 36,
-              child: const Icon(Icons.location_pin, color: Colors.red, size: 36),
-            ))
+        .map<Marker>(
+          (feature) => Marker(
+            point: LatLng(
+              feature['geometry']['coordinates'][1],
+              feature['geometry']['coordinates'][0],
+            ),
+            width: 36,
+            height: 36,
+            child: const Icon(Icons.location_pin, color: Colors.red, size: 36),
+          ),
+        )
         .toList();
 
     // Marcador de la ubicación del usuario
@@ -183,7 +196,11 @@ class _PantallaInicioState extends State<PantallaInicio> {
               padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
               child: Row(
                 children: [
-                  Icon(Icons.location_city, color: AppColors.azulPrincipal, size: 26),
+                  Icon(
+                    Icons.location_city,
+                    color: AppColors.azulPrincipal,
+                    size: 26,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -214,14 +231,16 @@ class _PantallaInicioState extends State<PantallaInicio> {
                   minZoom: 11,
                   maxZoom: 19,
                   interactionOptions: const InteractionOptions(
-                    flags: InteractiveFlag.pinchZoom |
+                    flags:
+                        InteractiveFlag.pinchZoom |
                         InteractiveFlag.drag |
                         InteractiveFlag.doubleTapZoom,
                   ),
                 ),
                 children: [
                   TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.example.app',
                   ),
                   PolygonLayer(
@@ -311,7 +330,9 @@ class _PantallaInicioState extends State<PantallaInicio> {
                             borderRadius: BorderRadius.circular(40),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.azulPrincipal.withOpacity(0.22),
+                                color: AppColors.azulPrincipal.withOpacity(
+                                  0.22,
+                                ),
                                 blurRadius: 10,
                                 offset: Offset(0, 5),
                               ),
@@ -319,7 +340,11 @@ class _PantallaInicioState extends State<PantallaInicio> {
                           ),
                           width: 78,
                           height: 78,
-                          child: const Icon(Icons.place, color: Colors.white, size: 48),
+                          child: const Icon(
+                            Icons.place,
+                            color: Colors.white,
+                            size: 48,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         const Text(
@@ -357,7 +382,11 @@ class _PantallaInicioState extends State<PantallaInicio> {
                           ),
                           width: 78,
                           height: 78,
-                          child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 48),
+                          child: const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.white,
+                            size: 48,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         const Text(

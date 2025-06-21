@@ -36,9 +36,7 @@ class _PantallaReporteState extends State<PantallaReporte> {
   late AudioRecorder _audioRecorder;
   String? _audioPath;
 
-  final _audioService = AudioService(
-    baseUrl: "http://192.168.1.219:5000",
-  );
+  final _audioService = AudioService(baseUrl: "http://172.17.150.208:5000");
   final _storageService = FirebaseStorageService();
 
   @override
@@ -171,9 +169,9 @@ class _PantallaReporteState extends State<PantallaReporte> {
     await Future.delayed(const Duration(seconds: 2));
     setState(() => cargando = false);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("¡Reporte enviado!")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("¡Reporte enviado!")));
       Navigator.pop(context);
     }
   }
@@ -199,7 +197,10 @@ class _PantallaReporteState extends State<PantallaReporte> {
           body: cargando
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -214,12 +215,19 @@ class _PantallaReporteState extends State<PantallaReporte> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.place, color: AppColors.azulPrincipal),
+                            const Icon(
+                              Icons.place,
+                              color: AppColors.azulPrincipal,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                direccion.isNotEmpty ? direccion : "Obteniendo ubicación...",
-                                style: const TextStyle(fontWeight: FontWeight.w500),
+                                direccion.isNotEmpty
+                                    ? direccion
+                                    : "Obteniendo ubicación...",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ],
@@ -242,13 +250,19 @@ class _PantallaReporteState extends State<PantallaReporte> {
                                     borderRadius: BorderRadius.circular(50),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppColors.rojoAlerta.withOpacity(0.13),
+                                        color: AppColors.rojoAlerta.withOpacity(
+                                          0.13,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 5),
                                       ),
                                     ],
                                   ),
-                                  child: const Icon(Icons.mic, color: Colors.white, size: 56),
+                                  child: const Icon(
+                                    Icons.mic,
+                                    color: Colors.white,
+                                    size: 56,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -276,14 +290,20 @@ class _PantallaReporteState extends State<PantallaReporte> {
                                   borderRadius: BorderRadius.circular(50),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.rojoAlerta.withOpacity(0.13),
+                                      color: AppColors.rojoAlerta.withOpacity(
+                                        0.13,
+                                      ),
                                       blurRadius: 8,
                                       offset: const Offset(0, 5),
                                     ),
                                   ],
                                 ),
                                 child: IconButton(
-                                  icon: const Icon(Icons.stop, color: Colors.white, size: 54),
+                                  icon: const Icon(
+                                    Icons.stop,
+                                    color: Colors.white,
+                                    size: 54,
+                                  ),
                                   onPressed: _detenerGrabacion,
                                 ),
                               ),
@@ -302,7 +322,10 @@ class _PantallaReporteState extends State<PantallaReporte> {
                       if (estado == EstadoGrabacion.revisando)
                         Container(
                           margin: const EdgeInsets.only(bottom: 24, top: 2),
-                          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 18,
+                            horizontal: 15,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(18),
@@ -322,8 +345,15 @@ class _PantallaReporteState extends State<PantallaReporte> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
-                                    margin: const EdgeInsets.only(right: 12, top: 5),
-                                    child: const Icon(Icons.graphic_eq, color: AppColors.azulPrincipal, size: 36),
+                                    margin: const EdgeInsets.only(
+                                      right: 12,
+                                      top: 5,
+                                    ),
+                                    child: const Icon(
+                                      Icons.graphic_eq,
+                                      color: AppColors.azulPrincipal,
+                                      size: 36,
+                                    ),
                                   ),
                                   Expanded(
                                     child: GestureDetector(
@@ -331,11 +361,16 @@ class _PantallaReporteState extends State<PantallaReporte> {
                                         _mostrarDialogoEdicion(
                                           "Descripción",
                                           transcripcion,
-                                          (nuevo) => setState(() => transcripcion = nuevo),
+                                          (nuevo) => setState(
+                                            () => transcripcion = nuevo,
+                                          ),
                                         );
                                       },
                                       child: Container(
-                                        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 2,
+                                          horizontal: 2,
+                                        ),
                                         child: Text(
                                           transcripcion,
                                           style: const TextStyle(
@@ -349,12 +384,18 @@ class _PantallaReporteState extends State<PantallaReporte> {
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.edit, size: 22, color: AppColors.azulPrincipal),
+                                    icon: const Icon(
+                                      Icons.edit,
+                                      size: 22,
+                                      color: AppColors.azulPrincipal,
+                                    ),
                                     onPressed: () {
                                       _mostrarDialogoEdicion(
                                         "Descripción",
                                         transcripcion,
-                                        (nuevo) => setState(() => transcripcion = nuevo),
+                                        (nuevo) => setState(
+                                          () => transcripcion = nuevo,
+                                        ),
                                       );
                                     },
                                   ),
@@ -365,17 +406,27 @@ class _PantallaReporteState extends State<PantallaReporte> {
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text("Tipo de incidente:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  const Text(
+                                    "Tipo de incidente:",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                   const SizedBox(width: 6),
                                   Expanded(
-                                    child: Text(tipoIncidente, style: const TextStyle(fontSize: 16)),
+                                    child: Text(
+                                      tipoIncidente,
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.edit, size: 20),
                                     onPressed: () => _mostrarDialogoEdicion(
                                       "Tipo de incidente",
                                       tipoIncidente,
-                                      (nuevo) => setState(() => tipoIncidente = nuevo),
+                                      (nuevo) =>
+                                          setState(() => tipoIncidente = nuevo),
                                     ),
                                   ),
                                 ],
@@ -384,17 +435,27 @@ class _PantallaReporteState extends State<PantallaReporte> {
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text("Referencia:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  const Text(
+                                    "Referencia:",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                   const SizedBox(width: 6),
                                   Expanded(
-                                    child: Text(referencia, style: const TextStyle(fontSize: 16)),
+                                    child: Text(
+                                      referencia,
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.edit, size: 20),
                                     onPressed: () => _mostrarDialogoEdicion(
                                       "Referencia",
                                       referencia,
-                                      (nuevo) => setState(() => referencia = nuevo),
+                                      (nuevo) =>
+                                          setState(() => referencia = nuevo),
                                     ),
                                   ),
                                 ],
@@ -408,7 +469,11 @@ class _PantallaReporteState extends State<PantallaReporte> {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.upload_file_rounded),
-                          label: Text(evidenciaFile == null ? "Subir evidencia" : "Evidencia seleccionada"),
+                          label: Text(
+                            evidenciaFile == null
+                                ? "Subir evidencia"
+                                : "Evidencia seleccionada",
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: AppColors.textoOscuro,
@@ -431,7 +496,10 @@ class _PantallaReporteState extends State<PantallaReporte> {
                       if (error != null)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Text(error!, style: const TextStyle(color: Colors.red)),
+                          child: Text(
+                            error!,
+                            style: const TextStyle(color: Colors.red),
+                          ),
                         ),
 
                       // ==== BOTONES FINALES ====
@@ -444,9 +512,14 @@ class _PantallaReporteState extends State<PantallaReporte> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.azulPrincipal,
                                   minimumSize: const Size(0, 54),
-                                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                                  textStyle: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 17,
+                                  ),
                                 ),
-                                onPressed: (estado == EstadoGrabacion.revisando && transcripcion.isNotEmpty)
+                                onPressed:
+                                    (estado == EstadoGrabacion.revisando &&
+                                        transcripcion.isNotEmpty)
                                     ? _enviarReporte
                                     : null,
                                 child: const Text("Enviar Reporte"),
