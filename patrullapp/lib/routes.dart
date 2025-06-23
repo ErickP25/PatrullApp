@@ -20,5 +20,5 @@ final Map<String, WidgetBuilder> appRoutes = {
   //  '/detalle': (context) => const PantallaDetalleReporte(), // ELIMÍNALA DEL MAPA
   '/rutas_sereno': (context) => const PantallaRutasSereno(),
   '/mapa_zonas': (context) => const PantallaMapaZonas(),
-  '/perfil': (context) => const PantallaPerfil(),
+  /*'/perfil': (context) => const PantallaPerfil(),*/
 };

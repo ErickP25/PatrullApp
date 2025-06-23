@@ -16,7 +16,7 @@ class PantallaAlerta extends StatefulWidget {
 
 class _PantallaAlertaState extends State<PantallaAlerta> {
   final _alertaService = AlertaService(
-    baseUrl: "http://172.17.150.208:5000",
+    baseUrl: "http://192.168.100.46:5000",
   ); // cambia IP
   String direccion = "";
   Position? posicion;

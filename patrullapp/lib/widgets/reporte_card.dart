@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/reporte_mock.dart';
+import '../models/reporte.dart';
 import '../utils/colors.dart';
 
 class ReporteCard extends StatelessWidget {
@@ -8,6 +8,7 @@ class ReporteCard extends StatelessWidget {
   final VoidCallback onEliminar;
   final VoidCallback onVerMapa;
   final VoidCallback? onTap;
+
   const ReporteCard({
     super.key,
     required this.reporte,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/boton_primario.dart';
 import '../utils/colors.dart';
+import '../services/auth_service.dart';
+import '../models/usuario.dart';
 
 class PantallaIngreso extends StatefulWidget {
   const PantallaIngreso({super.key});
@@ -15,28 +17,40 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
 
   String? _errorMsg;
   bool _loading = false;
+  final AuthService _authService = AuthService(
+    baseUrl: "http://192.168.100.46:5000",
+  );
 
-  void _iniciarSesion() async {
+  Future<void> _iniciarSesion() async {
     setState(() {
       _errorMsg = null;
       _loading = true;
     });
 
-    // Simula validación (reemplaza esto por tu backend)
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final usuarioData = await _authService.login(
+        _dniController.text.trim(),
+        _claveController.text.trim(),
+      );
 
-    final dni = _dniController.text.trim();
-    final clave = _claveController.text.trim();
+      // Si tu backend retorna usuario completo:
+      final usuario = Usuario.fromJson(usuarioData['usuario'] ?? usuarioData);
 
-    // Simulación: solo permite dni="78546221" y clave="vegueta777"
-    if (dni == "78546221" && clave == "vegueta777") {
+      if (!mounted) return;
       setState(() => _loading = false);
-      // Navega a inicio (y borra el stack para que no regrese atrás)
-      Navigator.pushNamedAndRemoveUntil(context, '/inicio', (_) => false);
-    } else {
+
+      // Navega y pasa el usuario o simplemente redirige
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/inicio',
+        (_) => false,
+        arguments: usuario.id, // O usuario.id_usuario según tu modelo
+      );
+    } catch (e) {
+      if (!mounted) return;
       setState(() {
         _loading = false;
-        _errorMsg = "DNI o Contraseña Incorrecto";
+        _errorMsg = e.toString().replaceAll('Exception:', '').trim();
       });
     }
   }
@@ -58,9 +72,8 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // LOGO DE TU APP
               Image.asset(
-                "assets/logo_patrullapp.png", // Usa el nombre de tu archivo real
+                "assets/logo_patrullapp.png",
                 width: 145,
                 height: 100,
                 fit: BoxFit.contain,
@@ -76,7 +89,6 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 25),
-              // DNI
               TextField(
                 controller: _dniController,
                 decoration: InputDecoration(
@@ -84,14 +96,15 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  errorText: _errorMsg != null
-                      ? ""
-                      : null, // para mostrar el mensaje debajo
+                  prefixIcon: const Icon(
+                    Icons.badge,
+                    color: AppColors.azulPrincipal,
+                  ),
+                  errorText: _errorMsg != null ? "" : null,
                 ),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 16),
-              // Contraseña
               TextField(
                 controller: _claveController,
                 decoration: InputDecoration(
@@ -99,13 +112,17 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
+                  prefixIcon: const Icon(
+                    Icons.lock_outline,
+                    color: AppColors.azulPrincipal,
+                  ),
                   errorText: _errorMsg != null ? "" : null,
                 ),
                 obscureText: true,
               ),
               if (_errorMsg != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 6, bottom: 4),
+                  padding: const EdgeInsets.only(top: 7, bottom: 4),
                   child: Text(
                     _errorMsg!,
                     style: const TextStyle(
@@ -116,21 +133,19 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
                   ),
                 ),
               const SizedBox(height: 13),
-              // Botón Iniciar Sesión
               BotonPrimario(
                 texto: "Iniciar Sesión",
                 cargando: _loading,
-                onPressed: _iniciarSesion,
+                onPressed: _loading ? () {} : _iniciarSesion, // Cambio aquí
               ),
               const SizedBox(height: 19),
-              // Enlace a registro
               GestureDetector(
                 onTap: () {
                   Navigator.pushNamed(context, '/registro');
                 },
                 child: Text(
                   "¿No tienes cuenta? Regístrate",
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppColors.azulPrincipal,
                     fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,

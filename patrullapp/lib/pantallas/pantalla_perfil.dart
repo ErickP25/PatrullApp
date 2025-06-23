@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import '../widgets/navbar.dart';
 import '../widgets/badge_reputacion.dart';
 import '../widgets/perfil_info_row.dart';
@@ -221,4 +221,4 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
       ),
     );
   }
-}
+}*/

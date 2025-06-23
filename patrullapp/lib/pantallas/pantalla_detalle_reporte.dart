@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/navbar.dart';
 import '../widgets/info_row.dart';
-import '../models/reporte_mock.dart';
+import '../models/reporte.dart'; // Importa el modelo real
 import '../utils/colors.dart';
 
 class PantallaDetalleReporte extends StatelessWidget {
@@ -31,9 +31,10 @@ class PantallaDetalleReporte extends StatelessWidget {
               color: reporte.favorito ? Colors.amber : Colors.grey,
             ),
             onPressed: () {
-              // Aquí lógica de guardar como favorito
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Funcionalidad favorito en desarrollo")),
+                const SnackBar(
+                  content: Text("Funcionalidad favorito en desarrollo"),
+                ),
               );
             },
           ),
@@ -43,9 +44,8 @@ class PantallaDetalleReporte extends StatelessWidget {
               color: AppColors.azulPrincipal,
             ),
             onPressed: () {
-              // Aquí lógica para compartir o copiar link
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text("Funcionalidad compartir en desarrollo"),
                 ),
               );
@@ -66,7 +66,6 @@ class PantallaDetalleReporte extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-
           // Fecha y hora
           InfoRow(
             icono: Icons.calendar_today,
@@ -74,55 +73,50 @@ class PantallaDetalleReporte extends StatelessWidget {
             contenido:
                 "Reportado el ${_fechaFormateada(reporte.fecha)} a las ${_horaFormateada(reporte.fecha)}",
           ),
-
           // Ubicación
           InfoRow(
             icono: Icons.place_outlined,
             titulo: "Ubicación del hecho:",
             contenido: reporte.direccion,
           ),
-
           // Descripción
-          InfoRow(
-            icono: Icons.text_snippet_outlined,
-            titulo: "Descripción:",
-            contenido:
-                "Dos sujetos a bordo de una motocicleta interceptaron a un transeúnte y le arrebataron su teléfono celular. Luego huyeron con dirección hacia Av. México.",
-          ),
-
-          // Prioridad
-          InfoRow(
-            icono: Icons.flag_outlined,
-            titulo: "Prioridad:",
-            contenido: "Nivel 3",
-          ),
-
+          if (reporte.descripcion != null && reporte.descripcion!.isNotEmpty)
+            InfoRow(
+              icono: Icons.text_snippet_outlined,
+              titulo: "Descripción:",
+              contenido: reporte.descripcion!,
+            ),
+          // Prioridad (si la tienes)
+          if (reporte.prioridad != null)
+            InfoRow(
+              icono: Icons.flag_outlined,
+              titulo: "Prioridad:",
+              contenido: reporte.prioridad!,
+            ),
           // Estado del reporte
           InfoRow(
             icono: Icons.verified_outlined,
             titulo: "Estado del reporte:",
-            contenido: reporte.estado == "En espera"
-                ? "En atención"
-                : reporte.estado,
+            contenido: reporte.estado,
           ),
-
-          // Atendido por
-          InfoRow(
-            icono: Icons.security_outlined,
-            titulo: "Atendido por:",
-            contenido: "Patrulla 14 – Sereno C. Mendoza",
-          ),
-
-          // Tiempo de respuesta
-          InfoRow(
-            icono: Icons.timer_outlined,
-            titulo: "Tiempo de respuesta:",
-            contenido: "8 minutos",
-          ),
+          // Atendido por (si tienes ese dato)
+          if (reporte.atendidoPor != null)
+            InfoRow(
+              icono: Icons.security_outlined,
+              titulo: "Atendido por:",
+              contenido: reporte.atendidoPor!,
+            ),
+          // Tiempo de respuesta (si tienes ese dato)
+          if (reporte.tiempoRespuesta != null)
+            InfoRow(
+              icono: Icons.timer_outlined,
+              titulo: "Tiempo de respuesta:",
+              contenido: reporte.tiempoRespuesta!,
+            ),
         ],
       ),
       bottomNavigationBar: BarraNav(
-        indiceActual: 1, // Porque viene desde Mis Reportes
+        indiceActual: 1,
         onTap: (nuevoIndice) {
           if (nuevoIndice == 0) {
             Navigator.pushNamedAndRemoveUntil(context, '/inicio', (_) => false);

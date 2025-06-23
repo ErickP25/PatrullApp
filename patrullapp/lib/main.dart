@@ -3,13 +3,11 @@ import 'routes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'pantallas/pantalla_detalle_reporte.dart';
-import 'models/reporte_mock.dart'; // <-- Este archivo lo genera flutterfire configure
+import 'models/reporte.dart'; // Usa el modelo real
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // Importante para Web
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const PatrullApp());
 }
 
@@ -34,7 +32,6 @@ class PatrullApp extends StatelessWidget {
         }
         return null;
       },
-      // Si tienes otras rutas con argumentos en el futuro, aquí va onGenerateRoute
     );
   }
 }

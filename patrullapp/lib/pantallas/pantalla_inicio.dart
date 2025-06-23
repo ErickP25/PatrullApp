@@ -15,7 +15,7 @@ class PantallaInicio extends StatefulWidget {
 
 class _PantallaInicioState extends State<PantallaInicio> {
   final ZonaService _zonaService = ZonaService(
-    baseUrl: "http://172.17.150.208:5000",
+    baseUrl: "http://192.168.100.46:5000",
   );
   Map<String, dynamic>? _zonaData;
   Map<String, dynamic>? _incidentesData;
@@ -114,7 +114,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
           if (nuevoIndice == 2) {
             Navigator.pushNamedAndRemoveUntil(
               context,
-              '/reporte',
+              '/ingreso',
               (_) => false,
             );
           }

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import '../widgets/navbar.dart';
 import '../widgets/chip_filtro.dart';
 import '../widgets/reporte_card.dart';
-import '../models/reporte_mock.dart';
+import '../models/reporte.dart'; // <--- Usa el modelo real
 import '../utils/colors.dart';
+import '../services/reporte_service.dart';
 
 class PantallaHistorial extends StatefulWidget {
   const PantallaHistorial({super.key});
@@ -13,50 +14,44 @@ class PantallaHistorial extends StatefulWidget {
 }
 
 class _PantallaHistorialState extends State<PantallaHistorial> {
-  int _indiceNav = 1; // Mis reportes es el tab 1
-
-  // Filtros de ejemplo
+  int _indiceNav = 1;
   List<String> tipos = ["Tipo incidente", "Estado", "Fecha"];
   int filtroActivo = 0;
 
-  // Lista de reportes (ejemplo, luego lo conectas a tu backend)
-  List<Reporte> reportes = [
-    Reporte(
-      id: "1",
-      tipo: "Robo al paso",
-      direccion: "Jr. Renovación con Av. Isabel La Católica, La Victoria",
-      fecha: DateTime.now().subtract(const Duration(minutes: 15)),
-      estado: "En espera",
-    ),
-    Reporte(
-      id: "2",
-      tipo: "Acoso callejero",
-      direccion: "Parque Cánepa, La Victoria",
-      fecha: DateTime.now().subtract(const Duration(hours: 1)),
-      estado: "Atendido",
-    ),
-    Reporte(
-      id: "3",
-      tipo: "Riña entre pandillas",
-      direccion: "Mercado San Cosme, La Victoria",
-      fecha: DateTime.now().subtract(const Duration(hours: 2)),
-      estado: "Falsa alarma",
-    ),
-    Reporte(
-      id: "4",
-      tipo: "Sospecha de merodeo nocturno",
-      direccion: "Calle Antonio Raimondi, Santa Anita",
-      fecha: DateTime.now().subtract(const Duration(hours: 4)),
-      estado: "Atendido",
-    ),
-    Reporte(
-      id: "5",
-      tipo: "Robo a comercio",
-      direccion: "Mercado San Cosme, La Victoria",
-      fecha: DateTime.now().subtract(const Duration(days: 1)),
-      estado: "Atendido",
-    ),
-  ];
+  List<Reporte> reportes = [];
+  bool cargando = true;
+  String? error;
+
+  // AJUSTA TU IP Y PUERTO
+  final _reporteService = ReporteService(baseUrl: "http://192.168.100.46:5000");
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarReportes();
+  }
+
+  Future<void> _cargarReportes() async {
+    setState(() {
+      cargando = true;
+      error = null;
+    });
+
+    try {
+      // Esto lo cambiarás por el id de usuario logueado más adelante
+      final usuarioId = "1";
+      final lista = await _reporteService.obtenerReportes(usuarioId);
+      setState(() {
+        reportes = lista.map((json) => Reporte.fromJson(json)).toList();
+        cargando = false;
+      });
+    } catch (e) {
+      setState(() {
+        error = "Error al cargar reportes: $e";
+        cargando = false;
+      });
+    }
+  }
 
   void _onNavTap(int i) {
     setState(() => _indiceNav = i);
@@ -64,10 +59,11 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
       Navigator.pushNamedAndRemoveUntil(context, '/inicio', (_) => false);
     }
     if (i == 2) {
-      Navigator.pushNamedAndRemoveUntil(context, '/perfil', (_) => false);
+      Navigator.pushNamedAndRemoveUntil(context, '/ingreso', (_) => false);
     }
   }
 
+  // Puedes implementar eliminar o favorito cuando lo tengas en el back
   void _onEliminar(Reporte r) {
     setState(() {
       reportes.removeWhere((rep) => rep.id == r.id);
@@ -75,23 +71,13 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
   }
 
   void _onFavorito(Reporte r) {
-    setState(() {
-      int idx = reportes.indexWhere((rep) => rep.id == r.id);
-      if (idx >= 0) {
-        reportes[idx] = Reporte(
-          id: r.id,
-          tipo: r.tipo,
-          direccion: r.direccion,
-          fecha: r.fecha,
-          estado: r.estado,
-          favorito: !r.favorito,
-        );
-      }
-    });
+    // Solo UI por ahora
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Funcionalidad no implementada")),
+    );
   }
 
   void _onVerMapa(Reporte r) {
-    // Lógica para ver ubicación en mapa
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text("Ver en mapa: ${r.direccion}")));
@@ -124,49 +110,58 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
           ),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Chips de filtro
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Row(
-              children: List.generate(
-                tipos.length,
-                (i) => ChipFiltro(
-                  label: tipos[i],
-                  seleccionado: filtroActivo == i,
-                  onTap: () => setState(() => filtroActivo = i),
+      body: cargando
+          ? const Center(child: CircularProgressIndicator())
+          : error != null
+          ? Center(child: Text(error!))
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Chips de filtro
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  child: Row(
+                    children: List.generate(
+                      tipos.length,
+                      (i) => ChipFiltro(
+                        label: tipos[i],
+                        seleccionado: filtroActivo == i,
+                        onTap: () => setState(() => filtroActivo = i),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                // Lista de reportes
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    itemCount: reportes.length,
+                    itemBuilder: (context, i) {
+                      final reporte = reportes[i];
+                      return ReporteCard(
+                        reporte: reporte,
+                        onFavorito: () => _onFavorito(reporte),
+                        onEliminar: () => _onEliminar(reporte),
+                        onVerMapa: () => _onVerMapa(reporte),
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/detalle',
+                            arguments: reporte,
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ),
-          // Lista de reportes
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              itemCount: reportes.length,
-              itemBuilder: (context, i) {
-                final reporte = reportes[i];
-                return ReporteCard(
-                  reporte: reporte,
-                  onFavorito: () => _onFavorito(reporte),
-                  onEliminar: () => _onEliminar(reporte),
-                  onVerMapa: () => _onVerMapa(reporte),
-                  onTap: () {
-                    // ¡Aquí va la navegación con argumentos!
-                    Navigator.pushNamed(
-                      context,
-                      '/detalle',
-                      arguments: reporte, // <--- ¡ESTO ES LO NUEVO!
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
       bottomNavigationBar: BarraNav(indiceActual: _indiceNav, onTap: _onNavTap),
     );
   }
