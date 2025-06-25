@@ -3,6 +3,7 @@ import '../widgets/boton_primario.dart';
 import '../utils/colors.dart';
 import '../services/auth_service.dart';
 import '../models/usuario.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PantallaIngreso extends StatefulWidget {
   const PantallaIngreso({super.key});
@@ -26,25 +27,26 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
       _errorMsg = null;
       _loading = true;
     });
-
     try {
       final usuarioData = await _authService.login(
         _dniController.text.trim(),
         _claveController.text.trim(),
       );
-
-      // Si tu backend retorna usuario completo:
       final usuario = Usuario.fromJson(usuarioData['usuario'] ?? usuarioData);
-
-      if (!mounted) return;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('id_usuario', usuario.id);
+      await prefs.setString('nombre', usuario.nombre);
+      await prefs.setString('apellido', usuario.apellido);
+      await prefs.setString('dni', usuario.dni);
+      await prefs.setString('telefono', usuario.telefono);
+      await prefs.setString('direccion', usuario.direccion ?? '');
+      // Puedes guardar más si tu modelo tiene
       setState(() => _loading = false);
-
-      // Navega y pasa el usuario o simplemente redirige
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/inicio',
         (_) => false,
-        arguments: usuario.id, // O usuario.id_usuario según tu modelo
+        arguments: usuario.id,
       );
     } catch (e) {
       if (!mounted) return;
@@ -136,7 +138,7 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
               BotonPrimario(
                 texto: "Iniciar Sesión",
                 cargando: _loading,
-                onPressed: _loading ? () {} : _iniciarSesion, // Cambio aquí
+                onPressed: _loading ? () {} : _iniciarSesion,
               ),
               const SizedBox(height: 19),
               GestureDetector(

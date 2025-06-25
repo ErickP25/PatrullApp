@@ -1,9 +1,10 @@
-/*import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/navbar.dart';
 import '../widgets/badge_reputacion.dart';
 import '../widgets/perfil_info_row.dart';
-import '../models/usuario.dart';
 import '../utils/colors.dart';
+import '../services/perfil_service.dart';
 
 class PantallaPerfil extends StatefulWidget {
   const PantallaPerfil({super.key});
@@ -13,18 +14,46 @@ class PantallaPerfil extends StatefulWidget {
 }
 
 class _PantallaPerfilState extends State<PantallaPerfil> {
-  // Usuario de ejemplo, cámbialo por tu lógica de backend/autenticación
-  final Usuario usuario = Usuario(
-    nombre: "Oscar Gonzales",
-    correo: "oscargonzales@gmail.com",
-    dni: "7182934",
-    reputacion: "Buena reputación",
-    reportes: 7,
-    alertas: 2,
-    confirmados: 5,
-  );
-
+  Map<String, dynamic>? perfil;
+  bool cargando = true;
+  String? error;
   bool recibirNotificaciones = true;
+
+  final _perfilService = PerfilService(baseUrl: "http://192.168.100.46:5000");
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarPerfil();
+  }
+
+  Future<void> _cargarPerfil() async {
+    setState(() {
+      cargando = true;
+      error = null;
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final idUsuario = prefs.getInt('id_usuario');
+      if (idUsuario == null) {
+        setState(() {
+          error = "No has iniciado sesión.";
+          cargando = false;
+        });
+        return;
+      }
+      final data = await _perfilService.obtenerPerfil(idUsuario);
+      setState(() {
+        perfil = data;
+        cargando = false;
+      });
+    } catch (e) {
+      setState(() {
+        error = "Error al cargar perfil: $e";
+        cargando = false;
+      });
+    }
+  }
 
   void _mostrarAyudaReputacion() {
     showDialog(
@@ -65,37 +94,19 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
       ),
     );
     if (confirmado ?? false) {
-      // Si quieres puedes limpiar datos de sesión aquí
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
       Navigator.pushNamedAndRemoveUntil(context, '/ingreso', (_) => false);
     }
   }
 
   void _cambiarContrasena() async {
-    final bool? confirmado = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("¿Deseas cambiar tu contraseña?"),
-        content: const Text("Serás redirigido al formulario de cambio."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancelar"),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Aceptar"),
-          ),
-        ],
+    // Implementa tu lógica aquí o navega a un formulario de cambio
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Redirigiendo a cambio de contraseña (demo)"),
       ),
     );
-    if (confirmado ?? false) {
-      // Aquí lógica para ir a cambio de contraseña
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Redirigiendo a cambio de contraseña (demo)"),
-        ),
-      );
-    }
   }
 
   @override
@@ -111,80 +122,82 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
         ),
         centerTitle: false,
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
-        children: [
-          // Foto de perfil y datos básicos
-          Center(
-            child: Column(
+      body: cargando
+          ? const Center(child: CircularProgressIndicator())
+          : error != null
+          ? Center(child: Text(error!))
+          : ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
               children: [
-                CircleAvatar(
-                  radius: 43,
-                  backgroundImage: const NetworkImage(
-                    "https://randomuser.me/api/portraits/men/32.jpg",
+                Center(
+                  child: Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 43,
+                        backgroundImage: const NetworkImage(
+                          "https://randomuser.me/api/portraits/men/32.jpg",
+                        ),
+                        backgroundColor: AppColors.azulPrincipal.withOpacity(
+                          0.15,
+                        ),
+                      ),
+                      const SizedBox(height: 11),
+                      Text(
+                        "${perfil?['nombre'] ?? ''} ${perfil?['apellido'] ?? ''}",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        "DNI : ${perfil?['dni'] ?? ''}",
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 11),
+                      BadgeReputacion(
+                        reputacion: perfil?['reputacion'] ?? "Sin reputación",
+                        onTap: _mostrarAyudaReputacion,
+                      ),
+                    ],
                   ),
-                  backgroundColor: AppColors.azulPrincipal.withOpacity(0.15),
                 ),
-                const SizedBox(height: 11),
+                const SizedBox(height: 24),
                 Text(
-                  usuario.nombre,
-                  style: const TextStyle(
+                  "Estadísticas",
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 20,
+                    fontSize: 16,
+                    color: AppColors.azulPrincipal,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  usuario.correo,
-                  style: const TextStyle(fontSize: 15, color: Colors.black54),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  "DNI : ${usuario.dni}",
-                  style: const TextStyle(fontSize: 15, color: Colors.black54),
-                ),
                 const SizedBox(height: 11),
-                BadgeReputacion(
-                  reputacion: usuario.reputacion,
-                  onTap: _mostrarAyudaReputacion,
+                _infoStat("Reportes realizados", perfil?['reportes']),
+                _infoStat("Alertas de emergencia", perfil?['alertas']),
+                _infoStat("Incidentes confirmados", perfil?['confirmados']),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text("Recibir notificaciones"),
+                  value: recibirNotificaciones,
+                  onChanged: (val) =>
+                      setState(() => recibirNotificaciones = val),
+                  activeColor: AppColors.azulPrincipal,
+                ),
+                PerfilInfoRow(
+                  icono: Icons.lock_outline,
+                  texto: "Cambiar contraseña",
+                  onTap: _cambiarContrasena,
+                ),
+                PerfilInfoRow(
+                  icono: Icons.logout,
+                  texto: "Cerrar sesión",
+                  onTap: _cerrarSesion,
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 24),
-          // Estadísticas
-          Text(
-            "Estadísticas",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: AppColors.azulPrincipal,
-            ),
-          ),
-          const SizedBox(height: 11),
-          _infoStat("Reportes realizados", usuario.reportes),
-          _infoStat("Alertas de emergencia", usuario.alertas),
-          _infoStat("Incidentes confirmados", usuario.confirmados),
-          const SizedBox(height: 16),
-          // Opciones
-          SwitchListTile(
-            title: const Text("Recibir notificaciones"),
-            value: recibirNotificaciones,
-            onChanged: (val) => setState(() => recibirNotificaciones = val),
-            activeColor: AppColors.azulPrincipal,
-          ),
-          PerfilInfoRow(
-            icono: Icons.lock_outline,
-            texto: "Cambiar contraseña",
-            onTap: _cambiarContrasena,
-          ),
-          PerfilInfoRow(
-            icono: Icons.logout,
-            texto: "Cerrar sesión",
-            onTap: _cerrarSesion,
-          ),
-        ],
-      ),
       bottomNavigationBar: BarraNav(
         indiceActual: 2,
         onTap: (nuevoIndice) {
@@ -198,15 +211,12 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
               (_) => false,
             );
           }
-          if (nuevoIndice == 2) {
-            /* ya estás aquí */
-          }
         },
       ),
     );
   }
 
-  Widget _infoStat(String label, int valor) {
+  Widget _infoStat(String label, int? valor) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 7),
       child: Row(
@@ -214,11 +224,11 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
           Text(label, style: const TextStyle(fontSize: 15)),
           const Spacer(),
           Text(
-            valor.toString(),
+            valor?.toString() ?? "-",
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
           ),
         ],
       ),
     );
   }
-}*/
+}

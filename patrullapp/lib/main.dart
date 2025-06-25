@@ -21,7 +21,7 @@ class PatrullApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      initialRoute: '/inicio',
+      initialRoute: '/ingreso',
       routes: appRoutes,
       onGenerateRoute: (settings) {
         if (settings.name == '/detalle') {

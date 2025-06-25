@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // <-- asegúrate de instalar el paquete
 import '../widgets/navbar.dart';
 import '../widgets/chip_filtro.dart';
 import '../widgets/reporte_card.dart';
-import '../models/reporte.dart'; // <--- Usa el modelo real
+import '../models/reporte.dart';
 import '../utils/colors.dart';
 import '../services/reporte_service.dart';
 
@@ -22,13 +23,17 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
   bool cargando = true;
   String? error;
 
-  // AJUSTA TU IP Y PUERTO
   final _reporteService = ReporteService(baseUrl: "http://192.168.100.46:5000");
 
   @override
   void initState() {
     super.initState();
     _cargarReportes();
+  }
+
+  Future<int?> _obtenerUsuarioId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('id_usuario');
   }
 
   Future<void> _cargarReportes() async {
@@ -38,11 +43,23 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
     });
 
     try {
-      // Esto lo cambiarás por el id de usuario logueado más adelante
-      final usuarioId = "1";
-      final lista = await _reporteService.obtenerReportes(usuarioId);
+      final usuarioId = await _obtenerUsuarioId();
+      if (usuarioId == null) {
+        setState(() {
+          error = "No has iniciado sesión.";
+          cargando = false;
+        });
+        return;
+      }
+      final lista = await _reporteService.obtenerReportes(usuarioId.toString());
+      // Aquí depende cómo retorna tu service:
+      // Si retorna List<Map<String, dynamic>>:
       setState(() {
-        reportes = lista.map((json) => Reporte.fromJson(json)).toList();
+        reportes = lista
+            .map<Reporte>(
+              (json) => Reporte.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
         cargando = false;
       });
     } catch (e) {
@@ -63,7 +80,6 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
     }
   }
 
-  // Puedes implementar eliminar o favorito cuando lo tengas en el back
   void _onEliminar(Reporte r) {
     setState(() {
       reportes.removeWhere((rep) => rep.id == r.id);
@@ -71,7 +87,6 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
   }
 
   void _onFavorito(Reporte r) {
-    // Solo UI por ahora
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Funcionalidad no implementada")),
     );
@@ -96,9 +111,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
         elevation: 0,
         actions: [
           TextButton.icon(
-            onPressed: () {
-              // Filtro avanzado
-            },
+            onPressed: () {},
             icon: const Icon(
               Icons.filter_alt_outlined,
               color: AppColors.azulPrincipal,
@@ -117,7 +130,6 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Chips de filtro
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -134,7 +146,6 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
                     ),
                   ),
                 ),
-                // Lista de reportes
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(

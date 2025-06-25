@@ -78,7 +78,9 @@ class _PantallaInicioState extends State<PantallaInicio> {
         elevation: 0,
         actions: [
           TextButton.icon(
-            onPressed: _cargarZonaYIncidentes,
+            onPressed: () {
+              Navigator.pushNamed(context, '/mapa_zonas');
+            },
             icon: const Icon(
               Icons.map_outlined,
               color: AppColors.azulPrincipal,
@@ -112,11 +114,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
             );
           }
           if (nuevoIndice == 2) {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              '/ingreso',
-              (_) => false,
-            );
+            Navigator.pushNamedAndRemoveUntil(context, '/perfil', (_) => false);
           }
         },
       ),

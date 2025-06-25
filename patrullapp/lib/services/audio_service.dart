@@ -5,20 +5,18 @@ import 'package:http_parser/http_parser.dart';
 
 class AudioService {
   final String baseUrl;
-
   AudioService({required this.baseUrl});
 
-  Future<Map<String, dynamic>?> enviarAudio({
+  // Solo transcribe, NO guarda reporte
+  Future<Map<String, dynamic>?> transcribirAudio({
     required File audioFile,
-    required String usuarioId,
     required String direccion,
     required double latitude,
     required double longitude,
   }) async {
-    final uri = Uri.parse('$baseUrl/api/crear_incidente');
+    final uri = Uri.parse('$baseUrl/api/transcribir_audio');
 
     final request = http.MultipartRequest('POST', uri)
-      ..fields['usuario_id'] = usuarioId
       ..fields['direccion'] = direccion
       ..fields['latitud'] = latitude.toString()
       ..fields['longitud'] = longitude.toString()
@@ -37,7 +35,7 @@ class AudioService {
       return jsonDecode(responseBody);
     } else {
       throw Exception(
-        'Error enviando audio: ${response.statusCode} - $responseBody',
+        'Error transcribiendo audio: ${response.statusCode} - $responseBody',
       );
     }
   }

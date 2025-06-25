@@ -5,11 +5,13 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geo;
 import '../services/audio_service.dart';
 import '../services/firebase_storage_service.dart';
+import '../services/reporte_service.dart';
 import '../utils/colors.dart';
 import '../utils/ubicacion_utils.dart';
 import '../widgets/navbar.dart';
 import 'package:record/record.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum EstadoGrabacion { inicio, grabando, revisando }
 
@@ -38,6 +40,7 @@ class _PantallaReporteState extends State<PantallaReporte> {
 
   final _audioService = AudioService(baseUrl: "http://192.168.100.46:5000");
   final _storageService = FirebaseStorageService();
+  final _reporteService = ReporteService(baseUrl: "http://192.168.100.46:5000");
 
   @override
   void initState() {
@@ -120,10 +123,8 @@ class _PantallaReporteState extends State<PantallaReporte> {
     });
 
     try {
-      const usuarioId = "1";
-      final resp = await _audioService.enviarAudio(
+      final resp = await _audioService.transcribirAudio(
         audioFile: audioFile!,
-        usuarioId: usuarioId,
         direccion: direccion,
         latitude: posicion?.latitude ?? 0.0,
         longitude: posicion?.longitude ?? 0.0,
@@ -138,6 +139,53 @@ class _PantallaReporteState extends State<PantallaReporte> {
     } catch (e) {
       setState(() {
         error = "Error al transcribir audio: $e";
+        cargando = false;
+      });
+    }
+  }
+
+  Future<void> _enviarReporte() async {
+    setState(() => cargando = true);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final usuarioId = prefs.getInt('id_usuario');
+
+      if (usuarioId == null) {
+        setState(() {
+          cargando = false;
+          error = "Usuario no autenticado. Inicia sesión de nuevo.";
+        });
+        return;
+      }
+
+      final exito = await _reporteService.enviarReporte({
+        'id_vecino': usuarioId,
+        'descripcion': transcripcion,
+        'direccion': direccion,
+        'latitud': posicion?.latitude,
+        'longitud': posicion?.longitude,
+        'tipo_incidente': tipoIncidente,
+      });
+
+      setState(() => cargando = false);
+
+      if (!exito) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error al enviar el reporte.")),
+        );
+        return;
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("¡Reporte enviado!")));
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      setState(() {
+        error = "Error al enviar reporte: $e";
         cargando = false;
       });
     }
@@ -161,18 +209,6 @@ class _PantallaReporteState extends State<PantallaReporte> {
       setState(() => error = "Error subiendo evidencia: $e");
     } finally {
       setState(() => cargando = false);
-    }
-  }
-
-  Future<void> _enviarReporte() async {
-    setState(() => cargando = true);
-    await Future.delayed(const Duration(seconds: 2));
-    setState(() => cargando = false);
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("¡Reporte enviado!")));
-      Navigator.pop(context);
     }
   }
 
@@ -233,13 +269,11 @@ class _PantallaReporteState extends State<PantallaReporte> {
                           ],
                         ),
                       ),
-
                       // ---- AUDIO & TRANSCRIPCIÓN ----
                       if (estado == EstadoGrabacion.inicio)
                         Center(
                           child: Column(
                             children: [
-                              // Botón circular grande
                               GestureDetector(
                                 onTap: _grabarAudio,
                                 child: Container(
@@ -340,7 +374,7 @@ class _PantallaReporteState extends State<PantallaReporte> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Transcripción bonita
+                              // Transcripción editable
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -463,7 +497,6 @@ class _PantallaReporteState extends State<PantallaReporte> {
                             ],
                           ),
                         ),
-
                       // ==== SUBIR EVIDENCIA ====
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -491,7 +524,6 @@ class _PantallaReporteState extends State<PantallaReporte> {
                           padding: const EdgeInsets.all(10.0),
                           child: Image.file(evidenciaFile!, height: 90),
                         ),
-
                       // ==== ERRORES ====
                       if (error != null)
                         Padding(
@@ -501,7 +533,6 @@ class _PantallaReporteState extends State<PantallaReporte> {
                             style: const TextStyle(color: Colors.red),
                           ),
                         ),
-
                       // ==== BOTONES FINALES ====
                       Padding(
                         padding: const EdgeInsets.only(top: 20.0, bottom: 20),
