@@ -23,7 +23,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
   bool cargando = true;
   String? error;
 
-  final _reporteService = ReporteService(baseUrl: "http://192.168.100.46:5000");
+  final _reporteService = ReporteService(baseUrl: "http://172.17.148.195:5000");
 
   @override
   void initState() {

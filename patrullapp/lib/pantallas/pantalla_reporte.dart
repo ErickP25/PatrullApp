@@ -38,9 +38,9 @@ class _PantallaReporteState extends State<PantallaReporte> {
   late AudioRecorder _audioRecorder;
   String? _audioPath;
 
-  final _audioService = AudioService(baseUrl: "http://192.168.100.46:5000");
+  final _audioService = AudioService(baseUrl: "http://172.17.148.195:5000");
   final _storageService = FirebaseStorageService();
-  final _reporteService = ReporteService(baseUrl: "http://192.168.100.46:5000");
+  final _reporteService = ReporteService(baseUrl: "http://172.17.148.195:5000");
 
   @override
   void initState() {

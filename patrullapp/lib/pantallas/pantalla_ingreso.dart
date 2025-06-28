@@ -19,7 +19,7 @@ class _PantallaIngresoState extends State<PantallaIngreso> {
   String? _errorMsg;
   bool _loading = false;
   final AuthService _authService = AuthService(
-    baseUrl: "http://192.168.100.46:5000",
+    baseUrl: "http://172.17.148.195:5000",
   );
 
   Future<void> _iniciarSesion() async {
