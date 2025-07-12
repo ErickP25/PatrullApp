@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geo;
@@ -16,7 +15,7 @@ class PantallaAlerta extends StatefulWidget {
 
 class _PantallaAlertaState extends State<PantallaAlerta> {
   final _alertaService = AlertaService(
-    baseUrl: "http://192.168.100.46:5000",
+    baseUrl: "http://192.168.1.220:5000",
   ); // cambia IP
   String direccion = "";
   Position? posicion;

@@ -19,7 +19,7 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
   String? error;
   bool recibirNotificaciones = true;
 
-  final _perfilService = PerfilService(baseUrl: "http://172.17.148.195:5000");
+  final _perfilService = PerfilService(baseUrl: "http://192.168.1.220:5000");
 
   @override
   void initState() {
