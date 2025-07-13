@@ -8,6 +8,7 @@ import 'pantallas/pantalla_historial.dart';
 import 'pantallas/pantalla_rutas_sereno.dart';
 import 'pantallas/pantalla_mapa_zonas.dart';
 import 'pantallas/pantalla_perfil.dart';
+import 'pantallas/pantalla_cambiar_password.dart';
 
 final Map<String, WidgetBuilder> appRoutes = {
   '/inicio': (context) => const PantallaInicio(),
@@ -19,4 +20,5 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/rutas_sereno': (context) => const PantallaRutasSereno(),
   '/mapa_zonas': (context) => const PantallaExplorarZonas(),
   '/perfil': (context) => const PantallaPerfil(),
+  '/cambiar_password': (context) => const PantallaCambiarPassword()
 };

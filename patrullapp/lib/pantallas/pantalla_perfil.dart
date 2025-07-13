@@ -5,6 +5,9 @@ import '../widgets/badge_reputacion.dart';
 import '../widgets/perfil_info_row.dart';
 import '../utils/colors.dart';
 import '../services/perfil_service.dart';
+import '../services/firebase_storage_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class PantallaPerfil extends StatefulWidget {
   const PantallaPerfil({super.key});
@@ -19,7 +22,8 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
   String? error;
   bool recibirNotificaciones = true;
 
-  final _perfilService = PerfilService(baseUrl: "http://192.168.1.220:5000");
+  final _perfilService = PerfilService(baseUrl: "http://192.168.1.219:5000");
+  final _picker = ImagePicker();
 
   @override
   void initState() {
@@ -88,6 +92,9 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.azulPrincipal,
+            ),
             child: const Text("Cerrar sesión"),
           ),
         ],
@@ -100,13 +107,55 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
     }
   }
 
-  void _cambiarContrasena() async {
-    // Implementa tu lógica aquí o navega a un formulario de cambio
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Redirigiendo a cambio de contraseña (demo)"),
+  void _cambiarContrasena() {
+    Navigator.pushNamed(context, '/cambiar_password');
+  }
+
+  void _editarPerfil() async {
+    if (perfil == null) return;
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => _EditarPerfilDialog(
+        nombre: perfil!['nombre'] ?? '',
+        apellido: perfil!['apellido'] ?? '',
+        telefono: perfil!['telefono'] ?? '',
+        direccion: perfil!['direccion'] ?? '',
       ),
     );
+    if (result != null) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final idUsuario = prefs.getInt('id_usuario');
+        await _perfilService.actualizarPerfil({
+          'id_usuario': idUsuario,
+          ...result,
+        });
+        await _cargarPerfil();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Perfil actualizado")));
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+    }
+  }
+
+  Future<void> _subirNuevaFoto() async {
+    try {
+      final picked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 75);
+      if (picked == null) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      final idUsuario = prefs.getInt('id_usuario');
+      final url = await FirebaseStorageService().subirArchivo(File(picked.path), "fotos_perfil");
+      if (url != null) {
+        await _perfilService.actualizarFotoPerfil(idUsuario!, url);
+        await _cargarPerfil();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Foto de perfil actualizada")));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No se pudo subir la foto")));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
   }
 
   @override
@@ -118,86 +167,156 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
         elevation: 0,
         title: const Text(
           "Mi perfil",
-          style: TextStyle(color: AppColors.textoOscuro),
+          style: TextStyle(color: AppColors.textoOscuro, fontWeight: FontWeight.bold, fontSize: 22),
         ),
-        centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: AppColors.azulPrincipal),
+            tooltip: 'Editar perfil',
+            onPressed: _editarPerfil,
+          ),
+        ],
       ),
       body: cargando
           ? const Center(child: CircularProgressIndicator())
           : error != null
-          ? Center(child: Text(error!))
-          : ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
-              children: [
-                Center(
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 43,
-                        backgroundImage: const NetworkImage(
-                          "https://randomuser.me/api/portraits/men/32.jpg",
-                        ),
-                        backgroundColor: AppColors.azulPrincipal.withOpacity(
-                          0.15,
-                        ),
+              ? Center(child: Text(error!))
+              : ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 16),
+                  children: [
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          CircleAvatar(
+                            radius: 55,
+                            backgroundColor: AppColors.azulPrincipal.withOpacity(0.14),
+                            backgroundImage: (perfil?['foto_url'] != null && perfil!['foto_url'] != "")
+                                ? NetworkImage(perfil!['foto_url'])
+                                : const AssetImage('assets/user_placeholder.png') as ImageProvider,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 12,
+                            child: GestureDetector(
+                              onTap: _subirNuevaFoto,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(color: AppColors.azulPrincipal, width: 1.2),
+                                  borderRadius: BorderRadius.circular(18),
+                                  boxShadow: [BoxShadow(color: AppColors.azulPrincipal.withOpacity(0.09), blurRadius: 6)],
+                                ),
+                                padding: const EdgeInsets.all(7),
+                                child: const Icon(Icons.camera_alt_rounded, color: AppColors.azulPrincipal, size: 26),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 11),
-                      Text(
-                        "${perfil?['nombre'] ?? ''} ${perfil?['apellido'] ?? ''}",
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            "${perfil?['nombre'] ?? ''} ${perfil?['apellido'] ?? ''}",
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "DNI : ${perfil?['dni'] ?? ''}",
+                            style: const TextStyle(fontSize: 15, color: Colors.black54),
+                          ),
+                          const SizedBox(height: 12),
+                          BadgeReputacion(
+                            reputacion: perfil?['reputacion'] ?? "Sin reputación",
+                            onTap: _mostrarAyudaReputacion,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        "DNI : ${perfil?['dni'] ?? ''}",
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Colors.black54,
-                        ),
+                    ),
+                    const SizedBox(height: 23),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 7)],
                       ),
-                      const SizedBox(height: 11),
-                      BadgeReputacion(
-                        reputacion: perfil?['reputacion'] ?? "Sin reputación",
-                        onTap: _mostrarAyudaReputacion,
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Estadísticas",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: AppColors.azulPrincipal,
+                              letterSpacing: 0.1,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          _infoStat("Reportes realizados", perfil?['reportes']),
+                          _infoStat("Alertas de emergencia", perfil?['alertas']),
+                          _infoStat("Incidentes confirmados", perfil?['confirmados']),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 17),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 7)],
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      child: Column(
+                        children: [
+                          PerfilInfoRow(
+                            icono: Icons.phone,
+                            texto: "Teléfono: ${perfil?['telefono'] ?? '-'}",
+                          ),
+                          PerfilInfoRow(
+                            icono: Icons.home_outlined,
+                            texto: "Dirección: ${perfil?['direccion'] ?? '-'}",
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SwitchListTile(
+                      title: const Text("Recibir notificaciones"),
+                      value: recibirNotificaciones,
+                      onChanged: (val) => setState(() => recibirNotificaciones = val),
+                      activeColor: AppColors.azulPrincipal,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 9),
+                      child: Column(
+                        children: [
+                          PerfilInfoRow(
+                            icono: Icons.lock_outline,
+                            texto: "Cambiar contraseña",
+                            onTap: _cambiarContrasena,
+                          ),
+                          PerfilInfoRow(
+                            icono: Icons.logout,
+                            texto: "Cerrar sesión",
+                            onTap: _cerrarSesion,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  "Estadísticas",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: AppColors.azulPrincipal,
-                  ),
-                ),
-                const SizedBox(height: 11),
-                _infoStat("Reportes realizados", perfil?['reportes']),
-                _infoStat("Alertas de emergencia", perfil?['alertas']),
-                _infoStat("Incidentes confirmados", perfil?['confirmados']),
-                const SizedBox(height: 16),
-                SwitchListTile(
-                  title: const Text("Recibir notificaciones"),
-                  value: recibirNotificaciones,
-                  onChanged: (val) =>
-                      setState(() => recibirNotificaciones = val),
-                  activeColor: AppColors.azulPrincipal,
-                ),
-                PerfilInfoRow(
-                  icono: Icons.lock_outline,
-                  texto: "Cambiar contraseña",
-                  onTap: _cambiarContrasena,
-                ),
-                PerfilInfoRow(
-                  icono: Icons.logout,
-                  texto: "Cerrar sesión",
-                  onTap: _cerrarSesion,
-                ),
-              ],
-            ),
       bottomNavigationBar: BarraNav(
         indiceActual: 2,
         onTap: (nuevoIndice) {
@@ -218,17 +337,96 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
 
   Widget _infoStat(String label, int? valor) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 7),
+      padding: const EdgeInsets.only(bottom: 7, left: 2),
       child: Row(
         children: [
-          Text(label, style: const TextStyle(fontSize: 15)),
+          Text(label, style: const TextStyle(fontSize: 15, color: Colors.black87)),
           const Spacer(),
           Text(
             valor?.toString() ?? "-",
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.azulPrincipal),
           ),
         ],
       ),
+    );
+  }
+}
+
+// --- MODAL DE EDICIÓN DE PERFIL ---
+class _EditarPerfilDialog extends StatefulWidget {
+  final String nombre;
+  final String apellido;
+  final String telefono;
+  final String direccion;
+  const _EditarPerfilDialog({
+    required this.nombre,
+    required this.apellido,
+    required this.telefono,
+    required this.direccion,
+  });
+
+  @override
+  State<_EditarPerfilDialog> createState() => _EditarPerfilDialogState();
+}
+
+class _EditarPerfilDialogState extends State<_EditarPerfilDialog> {
+  late TextEditingController _nombreCtrl, _apellidoCtrl, _telefonoCtrl, _direccionCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _nombreCtrl = TextEditingController(text: widget.nombre);
+    _apellidoCtrl = TextEditingController(text: widget.apellido);
+    _telefonoCtrl = TextEditingController(text: widget.telefono);
+    _direccionCtrl = TextEditingController(text: widget.direccion);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Editar Perfil"),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nombreCtrl,
+              decoration: const InputDecoration(labelText: "Nombre"),
+            ),
+            TextField(
+              controller: _apellidoCtrl,
+              decoration: const InputDecoration(labelText: "Apellido"),
+            ),
+            TextField(
+              controller: _telefonoCtrl,
+              decoration: const InputDecoration(labelText: "Teléfono"),
+              keyboardType: TextInputType.phone,
+            ),
+            TextField(
+              controller: _direccionCtrl,
+              decoration: const InputDecoration(labelText: "Dirección"),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancelar"),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context, {
+              'nombre': _nombreCtrl.text,
+              'apellido': _apellidoCtrl.text,
+              'telefono': _telefonoCtrl.text,
+              'direccion': _direccionCtrl.text,
+            });
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.azulPrincipal),
+          child: const Text("Guardar"),
+        ),
+      ],
     );
   }
 }

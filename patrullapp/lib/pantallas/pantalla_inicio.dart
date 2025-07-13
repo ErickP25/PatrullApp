@@ -15,7 +15,7 @@ class PantallaInicio extends StatefulWidget {
 
 class _PantallaInicioState extends State<PantallaInicio> {
   final ZonaService _zonaService = ZonaService(
-    baseUrl: "http://192.168.1.220:5000",
+    baseUrl: "http://192.168.1.219:5000",
   );
   Map<String, dynamic>? _zonaData;
   Map<String, dynamic>? _incidentesData;

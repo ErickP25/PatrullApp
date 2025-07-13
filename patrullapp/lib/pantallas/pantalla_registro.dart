@@ -18,7 +18,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
   final direccionController = TextEditingController();
   final contrasenaController = TextEditingController();
   final RegistroService _registroService = RegistroService(
-    baseUrl: "http://192.168.1.220:5000",
+    baseUrl: "http://192.168.1.219:5000",
   ); // Actualiza IP si es necesario
 
   bool _cargando = false;

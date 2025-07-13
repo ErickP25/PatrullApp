@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ZonaExplorarService {
-  final String baseUrl = "http://192.168.1.220:5000"; // Cambia por tu IP si es necesario
+  final String baseUrl = "http://192.168.1.219:5000"; // Cambia por tu IP si es necesario
 
   /// Obtiene la lista de distritos (para filtros)
   Future<List<dynamic>> obtenerDistritos() async {
